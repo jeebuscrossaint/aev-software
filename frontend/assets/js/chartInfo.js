@@ -167,7 +167,7 @@ let battery = {
 export const batteryChart = {
     rotation: 260,
     circumference: 200,
-    responsive: true,
+    responsive: false,
     animation: false,
     plugins: {
         legend: {

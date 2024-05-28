@@ -95,7 +95,7 @@
             updateBattery(Number((data.value.SOC).slice(0, -1)));
             // Reload Graphs
             reloaded.value = !(reloaded.value)
-        }, 250);
+        }, 1250);
     });
 </script>
 <template>
@@ -120,11 +120,11 @@
                     <!--Battery Gaugue-->
                     <div v-if="reloaded" class="w-[45%] h-full flex justify-center items-center">
                         <h1 class="text-4xl sm:text-6xl font-bold absolute"><br>{{ data.SOC }}</h1>
-                        <Doughnut :data="battery" :options="batteryChart" />
+                        <Doughnut :data="battery" :options="batteryChart" class="w-full" />
                     </div>
                     <div v-if="!reloaded" class="w-[45%] h-full flex justify-center items-center">
                         <h1 class="text-4xl sm:text-6xl font-bold absolute"><br>{{ data.SOC }}</h1>
-                        <Doughnut :data="battery" :options="batteryChart" />
+                        <Doughnut :data="battery" :options="batteryChart" class="w-full" />
                     </div>
                 </div>
                 <!--Divider-->
