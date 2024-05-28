@@ -137,7 +137,7 @@
     <div v-if="JSON.stringify(error)!='{}'">
         <div class="flex justify-center items-center bg-[#F9FBFD] p-2">
             <img src="/alsetSideLogo.png" alt="" class="absolute top-5 w-[150px] sm:w-[200px] hidden sm:block">
-            <div class="min-w-[75vw] min-h-[50vh] bg-[rgba(0,0,0,0.3)] rounded-3xl flex flex-col items-center py-2 sm:py-10 gap-3">
+            <div class="w-full h-full bg-[rgba(0,0,0,0.3)] rounded-3xl flex flex-col items-center py-2 sm:py-10 gap-3">
                 <h1 class="font-bold text-4xl sm:text-5xl bg-gradient-to-r from-blue-500 via-black to-red-500 inline-block text-transparent bg-clip-text">
                     An error has occured!
                 </h1>

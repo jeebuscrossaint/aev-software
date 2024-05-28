@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+focused=$(hyprctl monitors -j | jq -rc '[ .[].focused ] | index(true)')
+# echo $focused
+
+dispatcher=$1
+workspace=$2
+
+hyprctl dispatch "$dispatcher" "$focused$workspace"

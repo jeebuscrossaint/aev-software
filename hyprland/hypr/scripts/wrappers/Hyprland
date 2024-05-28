@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+# This script is used to create a new Hyprland instance.
+# This wrapper is now deprecated due to Hyprland supporting environment variables
+# in the hyprland.conf file and this script may be removed in the future.
+
+# === Environment Variables ===
+export XDG_CURRENT_DESKTOP=Hyprland
+export XDG_SESSION_DESKTOP=Hyprland
+export XDG_SESSION_TYPE=wayland
+# export XDG_CURRENT_DESKTOP=sway
+# export XDG_SESSION_DESKTOP=sway
+export MOZ_ENABLE_WAYLAND=1
+export _JAVA_AWT_WM_NONREPARENTING=1
+export CLUTTER_BACKEND=wayland
+export QT_QPA_PLATFORM=wayland
+export QT_QPA_PLATFORMTHEME=qt5ct
+export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+export WLR_BACKEND=vulkan
+export GDK_BACKEND=wayland
+
+# = Cursor Settings ===
+# export XCURSOR_PATH=/usr/share/icons:$HOME/.local/share/icons:$HOME/.icons
+# export XCURSOR_THEME=BreezeX-Dark
+# export XCURSOR_SIZE=24
+hyprctl setcursor BreezeX-Dark 24
+
+# === Start Hyprland ===
+exec Hyprland
