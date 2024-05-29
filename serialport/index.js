@@ -3,6 +3,9 @@ import { DelimiterParser } from '@serialport/parser-delimiter';
 import { Server } from 'socket.io';
 import {createServer} from 'http';
 import express from 'express';
+import cors from 'cors';
+
+
 
 const port = new SerialPort({
     path: '/dev/ttyUSB0',
@@ -13,21 +16,66 @@ const byteparser = port.pipe(new DelimiterParser({
 }));
 port.open();
 const server = express(); // socketio server used as fallback in case of electron failure
+server.use(cors())
 const httpServer = createServer(server);
-const io = new Server(httpServer);
+const io = new Server(httpServer, {cors: {
+    origin: '*',
+  }});
 const connections = [];
+
+function BmsData(data) {
+    // Trim the first two elements of the array and the last element of the array (useless bc first is "\r" and last is "mcu> ")
+    data.shift();
+    data.shift();
+    data.pop();
+
+    // Split each element by the colon and trim the whitespace from the beginning and end
+    data = data.map((element) => {
+        return element.split(':').map((item) => {
+            return item.trim();
+        });
+    });
+
+    // Remove all instances of \r from the array
+    data = data.map((element) => {
+        return element.map((item) => {
+            return item.replace(/\r/g, '');
+        });
+    });
+
+    // Trim spaces in all of the keys
+    data = data.map((element) => {
+        return element.map((item) => {
+            return item.replace(/\s/g, '');
+        });
+    });
+
+    const dataObj = {};
+    for (let item of data) {
+        dataObj[item[0]] = item[1];
+    }
+
+    // Trim all non-numbers from dataObj.uptime
+    let oldUptime = dataObj.uptime.split("");
+    let newUptime = [];
+    for (let i = 0; i < oldUptime.length; i++) {
+        if (isNaN(oldUptime[i])) {
+            if (oldUptime[i].match(",")) {
+                newUptime.push(oldUptime[i]);
+            }
+        } else {
+            newUptime.push(oldUptime[i]);
+        }
+    }               
+    dataObj.uptime = newUptime.join("").split(",");
+
+    return dataObj;
+}
 
 byteparser.on('data', (stream) => { //reads data
     let data = stream.toString().split('\n');
-    console.log(data);
-    let battery_data = {};
-    for (let item of data) {
-        item = item.trim().split(' ');
-        item = item.filter((el) => el != '');
-        if (item.includes(':') && !(item.includes('uptime')) && !(item.includes('alerts'))) {
-            battery_data[item[0]] = item[2];
-        }
-    }
+    let battery_data = BmsData(data);
+    console.log(battery_data);
     io.emit('data', battery_data);
 });
 port.on('error', (err) => {io.emit('error', err)});
@@ -35,7 +83,7 @@ port.on('error', (err) => {io.emit('error', err)});
 io.on('connection', (socket) => {
     console.log('New connection!');
     connections.push(socket);
-    if(writeData("sh\n")) {
+    if(writeData('sh\n')) {
         let interval = setInterval(() => {
             if(connections.length < 1) {
                 clearInterval(interval);

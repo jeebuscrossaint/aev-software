@@ -1,0 +1,30 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "build": "nuxt build --no-fork",
+    "dev": "nuxt dev --no-fork",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.3",
+    "nuxt": "3.6.5",
+    "vue": "^3.4.27",
+    "vue-chartjs": "^5.3.1",
+    "vue-router": "^4.3.2"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.19",
+    "electron": "^30.0.8",
+    "electron-builder": "^24.13.3",
+    "nuxt-electron": "^0.7.0",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "vite-plugin-electron": "^0.28.7",
+    "vite-plugin-electron-renderer": "^0.14.5"
+  }
+}

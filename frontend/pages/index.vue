@@ -1,0 +1,3 @@
+<template>
+    hello home
+</template>
