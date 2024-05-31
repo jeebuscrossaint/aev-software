@@ -1,16 +1,20 @@
 <script setup>
     import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
     import { Line } from 'vue-chartjs';
+    import { Doughnut } from 'vue-chartjs'
     import * as chartConfig from '/assets/js/chartInfo.js'
-    import {Chart as ChartJS,CategoryScale,LinearScale,PointElement,LineElement,Title,Tooltip,Legend,Filler,Decimation} from 'chart.js';
-    ChartJS.register(CategoryScale,LinearScale,PointElement,LineElement,Title,Tooltip,Legend,Filler,Decimation);
+    import {Chart as ChartJS,CategoryScale,LinearScale,PointElement,LineElement,Title,Tooltip,Legend,Filler,Decimation,ArcElement} from 'chart.js';
+    
+    ChartJS.register(CategoryScale,LinearScale,PointElement,LineElement,Title,Tooltip,Legend,Filler,Decimation,ArcElement);
 
     // Data for chart renders & reactivity
     let reloaded = ref(true);
     const voltageChart = chartConfig.voltageChart;
     const currentChart = chartConfig.currentChart;
-    const voltage = ref(chartConfig.getVoltage([0, 0, 0, 0, 0]));
+    const batteryChart = chartConfig.batteryChart;
+    const voltage = ref(chartConfig.getVoltage([0, 0, 0, 0, 0, 0, 0, 0, 0]));
     const current = ref(chartConfig.getCurrent([0, 0, 0, 0, 0, 0, 0, 0, 0]));
+    const battery = ref(chartConfig.getBattery([0,100]));
     // Functions to update charts
     function updateVoltage(newVoltage, newMean){
         for (let i = 0; i < voltage.value.datasets[0].data.length; i++) {
@@ -43,7 +47,11 @@
             }
         }
     }
-    
+    function updateBattery(newCharge){
+        battery.value.datasets[0].data[0] = newCharge;
+        battery.value.datasets[0].data[1] = 100-newCharge;
+    }
+
     // Data & Error Refs for direct HTML access
     let data = ref({
         "voltage":"91.84v",
@@ -66,6 +74,8 @@
         updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
         // Current
         updateCurrent(Number((data.value.current).slice(0, -1)));
+        // Battery
+        updateBattery(Number((data.value.SOC).slice(0, -1)));
         // Reload Graphs
         reloaded.value = !(reloaded.value)
     });
@@ -81,9 +91,11 @@
             updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
             // Current
             updateCurrent(Number((data.value.current).slice(0, -1)));
+            // Battery
+            updateBattery(Number((data.value.SOC).slice(0, -1)));
             // Reload Graphs
             reloaded.value = !(reloaded.value)
-        }, 500);
+        }, 250);
     });
 </script>
 <template>
@@ -93,24 +105,27 @@
     <div v-else>
         <div class="w-screen flex justify-center items-center">
             <div class="w-full h-full flex flex-col justify-center items-center flex-wrap max-w-[900px]">
+                <!--Logo-->
+                <img src="/alsetSideLogo.png" alt="" class="absolute top-5 w-[150px] sm:w-[200px]">
                 <div class="flex gap-5 h-[40vh] w-[95%] p-5 justify-between items-center">
+                    <!--Battery Info Text-->
                     <div class="flex flex-col gap-5">
-                        <h1 class="text-3xl font-semibold">Battery</h1> 
-                        <p>
+                        <h1 class="text-3xl sm:text-5xl font-semibold">Battery</h1> 
+                        <p class="sm:text-2xl">
                             Alerts: {{ data.alerts }}<br>
                             Cells: {{ data.cells }}<br>
-                            Uptime: {{ data.uptime[0] }}:{{ data.uptime[1] }}:{{ data.uptime[2] }}<br>
-                            Charge: {{ data.SOC }}
+                            Uptime: {{ data.uptime[0] }}:{{ data.uptime[1] }}:{{ data.uptime[2] }}
                         </p>
                     </div>
                     <!--Battery Gaugue-->
-                    <div v-if="reloaded">
-                        
+                    <div v-if="reloaded" class="w-[45%] h-full flex justify-center items-center">
+                        <h1 class="text-4xl sm:text-6xl font-bold absolute"><br>{{ data.SOC }}</h1>
+                        <Doughnut :data="battery" :options="batteryChart" />
                     </div>
-                    <div v-if="!reloaded">
-
+                    <div v-if="!reloaded" class="w-[45%] h-full flex justify-center items-center">
+                        <h1 class="text-4xl sm:text-6xl font-bold absolute"><br>{{ data.SOC }}</h1>
+                        <Doughnut :data="battery" :options="batteryChart" />
                     </div>
-                    
                 </div>
                 <!--Divider-->
                 <div class="w-full h-[2px] flex justify-center items-center px-3">
@@ -119,35 +134,24 @@
                 <div class="flex justify-center items-center gap-5 w-full h-[59vh] py-5">
 			        <!--Voltage-->
                     <div v-if="reloaded == true" class="w-[45%] h-full flex flex-col gap-3 justify-center items-center">
-                        <h1 class="text-3xl">Voltage</h1>
-                        <div class="absolute">
-                            <p class="text-3xl sm:text-5xl font-bold text-red-600">{{ data.voltage }}</p>
-                            <p class="text-3xl sm:text-5xl font-bold text-blue-600">{{ data.mean }}</p>
-                        </div>
+                        <h1 class="text-3xl">Voltage: {{ data.voltage }}</h1>
                         <Line :data="voltage" :options="voltageChart" class="bg-gray-200 rounded-md" />
                     </div>
                     <div v-if="reloaded == false" class="w-[45%] h-full flex flex-col gap-3 justify-center items-center">
-                        <h1 class="text-3xl">Voltage</h1>
-                        <div class="absolute">
-                            <p class="text-3xl sm:text-5xl font-bold text-red-600">{{ data.voltage }}</p>
-                            <p class="text-3xl sm:text-5xl font-bold text-blue-600">{{ data.mean }}</p>
-                        </div>
+                        <h1 class="text-3xl">Voltage: {{ data.voltage }}</h1>
                         <Line :data="voltage" :options="voltageChart" class="bg-gray-200 rounded-md" />
                     </div>
                     <!--Current-->
                     <div v-if="reloaded == true" class="w-[45%] h-full flex flex-col gap-3 justify-center items-center">
-                        <h1 class="text-3xl">Current</h1>
-                        <p class="text-3xl sm:text-5xl font-bold text-red-600 absolute">{{ data.current }}</p>
+                        <h1 class="text-3xl">Current: {{ data.current }}</h1>
                         <Line :data="current" :options="currentChart" class="bg-gray-200 rounded-md" />
                     </div>
                     <div v-if="reloaded == false" class="w-[45%] h-full flex flex-col gap-3 justify-center items-center">
-                        <h1 class="text-3xl">Current</h1>
-                        <p class="text-3xl sm:text-5xl font-bold text-red-600 absolute">{{ data.current }}</p>
+                        <h1 class="text-3xl">Current: {{ data.current }}</h1>
                         <Line :data="current" :options="currentChart" class="bg-gray-200 rounded-md" />
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
 </template>

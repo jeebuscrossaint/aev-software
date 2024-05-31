@@ -7,7 +7,8 @@ function e(n = "/") {
       nodeIntegration: !0,
       contextIsolation: !1
     },
-    autoHideMenuBar: !0
+    autoHideMenuBar: !0,
+    icon: "../public/favicon.ico"
   }).loadURL(`${process.env.VITE_DEV_SERVER_URL}/#${n}`);
 }
 o.whenReady().then(() => {

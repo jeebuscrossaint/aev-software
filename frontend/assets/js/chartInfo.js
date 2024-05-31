@@ -1,5 +1,7 @@
+/***********VOLTAGE***********/ 
+
 let voltage = {
-    labels: [ '1s', '', '0.5s', '', 'Now'],
+    labels: [ '2s', '', '', '', '1s', '', '', '', 'Now'],
     datasets: [
         {
             label: 'Per Cell',
@@ -15,7 +17,7 @@ let voltage = {
             capBezierPoints: false,
             borderCapStyle: 'round',
             cubicInterpolationMode: 'monotone',
-            data: [0, 0, 0, 0, 0],
+            data: [0, 0, 0, 0, 0, 0, 0, 0, 0],
         },
         {
             label: 'Overall',
@@ -30,15 +32,10 @@ let voltage = {
             pointStyle: false,
             borderCapStyle: 'round',
             cubicInterpolationMode: 'monotone',
-            data: [0, 0, 0, 0, 0],
+            data: [0, 0, 0, 0, 0, 0, 0, 0, 0],
         },
     ]
 };
-
-export function getVoltage(newData){
-    voltage.datasets[0].data = newData;
-    return voltage;
-}
 
 export const voltageChart = {
     responsive: true,
@@ -82,8 +79,15 @@ export const voltageChart = {
     aspectRatio: 1/1,
 }
 
+export function getVoltage(newData){
+    voltage.datasets[0].data = newData;
+    return voltage;
+}
+
+/***********CURRENT***********/ 
+
 let current = {
-    labels: [ '1s', '', '', '', '0.5s', '', '', '', 'Now'],
+    labels: [ '2s', '', '', '', '1s', '', '', '', 'Now'],
     datasets: [
       {
         label: 'Voltage',
@@ -103,11 +107,6 @@ let current = {
       },
     ]
 };
-
-export function getCurrent(newData){
-    current.datasets[0].data = newData;
-    return current;
-}
 
 export const currentChart = {
     responsive: true,
@@ -144,4 +143,43 @@ export const currentChart = {
         }
     },
     aspectRatio: 1/1,
+}
+
+export function getCurrent(newData){
+    current.datasets[0].data = newData;
+    return current;
+}
+
+/***********BATTERY***********/ 
+
+let battery = {
+    labels: ["Charged", "Empty"],
+    datasets: [
+        {
+            label: 'Charge',
+            data: [0, 100],
+            backgroundColor: ["Green", "Gray"],
+            cutout: '70%'
+        }
+    ]
+};
+
+export const batteryChart = {
+    rotation: 260,
+    circumference: 200,
+    responsive: true,
+    animation: false,
+    plugins: {
+        legend: {
+            display: false,
+        },
+        tooltip: {
+            enabled: false
+        },
+    }
+}
+
+export function getBattery(newData){
+    battery.datasets[0].data = newData;
+    return battery;
 }

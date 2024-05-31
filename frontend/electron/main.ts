@@ -11,12 +11,11 @@ function createWindow(route = '/') { //creates electron windows
         contextIsolation: false,
     },
     autoHideMenuBar: true,
+    icon: '../public/favicon.ico'
   });
   
   // win.loadURL(`file://${path.join(__dirname, '/react/build/index.html')}#${route}`);
-  win.loadURL(`${process.env.VITE_DEV_SERVER_URL}/#${route}`);
-
-  
+  win.loadURL(`${process.env.VITE_DEV_SERVER_URL}/#${route}`);  
 }
 
 app.whenReady().then(() => {
@@ -26,4 +25,4 @@ app.whenReady().then(() => {
 });
 app.on('window-all-closed', () => {
   app.quit();
-})
+});
