@@ -40,10 +40,10 @@ export function getVoltage(newData){
     return voltage;
 }
 
-
 export const voltageChart = {
     responsive: true,
     maintainAspectRatio: true,
+    animation: false,
     plugins: {
         legend: {
             display: true,
@@ -61,7 +61,7 @@ export const voltageChart = {
         x: {
             ticks: {
                 color: 'black',
-                padding: 8
+                padding: 3
             },
             grid: {
                 drawTicks: false
@@ -70,11 +70,13 @@ export const voltageChart = {
         y: {
             ticks: {
                 color: 'black', 
-                padding: 8
+                padding: 3
             },
             grid: {
                 drawTicks: false,
-            }
+            },
+            max: 120,
+            min: 0
         }
     },
     aspectRatio: 1/1,
@@ -91,7 +93,7 @@ let current = {
         fill: {
             target: 'origin',
             above: 'rgba(255, 0, 0,0.3)',   // Area will be red above the origin
-            below: 'rgba(127, 159, 229,0.8)'
+            below: 'rgba(255, 0, 0,0.3)'
         },
         tension: 0.1,
         pointStyle: false,
@@ -110,6 +112,7 @@ export function getCurrent(newData){
 export const currentChart = {
     responsive: true,
     maintainAspectRatio: true,
+    animation: false,
     plugins: {
         legend: {
             display: false,
@@ -135,7 +138,9 @@ export const currentChart = {
             },
             grid: {
                 drawTicks: false,
-            }
+            },
+            max: 50,
+            min: -50
         }
     },
     aspectRatio: 1/1,

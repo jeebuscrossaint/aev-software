@@ -5,11 +5,44 @@
     import {Chart as ChartJS,CategoryScale,LinearScale,PointElement,LineElement,Title,Tooltip,Legend,Filler,Decimation} from 'chart.js';
     ChartJS.register(CategoryScale,LinearScale,PointElement,LineElement,Title,Tooltip,Legend,Filler,Decimation);
 
-    // Data for chart renders
+    // Data for chart renders & reactivity
+    let reloaded = ref(true);
     const voltageChart = chartConfig.voltageChart;
     const currentChart = chartConfig.currentChart;
-    const voltage = ref(chartConfig.getVoltage([5,7,4,2,1]))
-    const current = ref(chartConfig.getCurrent([2,5,7,0,0,0,0,6,4]))
+    const voltage = ref(chartConfig.getVoltage([0, 0, 0, 0, 0]));
+    const current = ref(chartConfig.getCurrent([0, 0, 0, 0, 0, 0, 0, 0, 0]));
+    // Functions to update charts
+    function updateVoltage(newVoltage, newMean){
+        for (let i = 0; i < voltage.value.datasets[0].data.length; i++) {
+            if (i == voltage.value.datasets[0].data.length - 1) {
+                voltage.value.datasets[0].data[i] = newMean;
+                break;
+            }
+            else{
+                voltage.value.datasets[0].data[i] = voltage.value.datasets[0].data[i+1];
+            }
+        }
+        for (let i = 0; i < voltage.value.datasets[1].data.length; i++) {
+            if (i == voltage.value.datasets[1].data.length - 1) {
+                voltage.value.datasets[1].data[i] = newVoltage;
+                break;
+            }
+            else{
+                voltage.value.datasets[1].data[i] = voltage.value.datasets[1].data[i+1];
+            }
+        }
+    }
+    function updateCurrent(newCurrent){
+        for (let i = 0; i < current.value.datasets[0].data.length; i++) {
+            if (i == current.value.datasets[0].data.length - 1) {
+                current.value.datasets[0].data[i] = newCurrent;
+                break;
+            }
+            else{
+                current.value.datasets[0].data[i] = current.value.datasets[0].data[i+1];
+            }
+        }
+    }
     
     // Data & Error Refs for direct HTML access
     let data = ref({
@@ -23,30 +56,34 @@
         "uptime":["0","34","26"]
     })
     let error = ref({});
+
     // Stream to receive backend data & update graphs
     const socket = io('http://localhost:3000', {  reconnectionDelayMax: 10000,});
     socket.on('data', (content) => {
+        // Update All data
         data.value = content;
+        // Voltage
+        updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
+        // Current
+        updateCurrent(Number((data.value.current).slice(0, -1)));
+        // Reload Graphs
+        reloaded.value = !(reloaded.value)
     });
     socket.on('error', (content) => {
         console.error("SOCKET ERROR: " + content);
         error.value = content;
     });
 
-    let newVoltage = [0, 0, 0, 0, 0];
-    let newCurrent = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    // Testing Graphs
     onMounted(() => {
-        setInterval(() => {
-            (newVoltage).push(15);
-            (newVoltage).shift();
-            (newCurrent).push(15);
-            (newCurrent).shift();
-            voltage.value = chartConfig.getVoltage(newVoltage);
-            current.value = chartConfig.getCurrent(newCurrent);
-            console.log("changed");
-	    console.log(voltage.value.datasets[0].data);
-	    console.log(current.value.datasets[0].data);
-        }, 3000)
+        setInterval(async () => {
+            // Voltage
+            updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
+            // Current
+            updateCurrent(Number((data.value.current).slice(0, -1)));
+            // Reload Graphs
+            reloaded.value = !(reloaded.value)
+        }, 500);
     });
 </script>
 <template>
@@ -64,21 +101,48 @@
                             Cells: {{ data.cells }}<br>
                             Uptime: {{ data.uptime[0] }}:{{ data.uptime[1] }}:{{ data.uptime[2] }}<br>
                             Charge: {{ data.SOC }}
-
                         </p>
                     </div>
-                    <LazyLineChart :chartData="current" :chartOptions="currentChart" class="bg-gray-200 rounded-md" />
+                    <!--Battery Gaugue-->
+                    <div v-if="reloaded">
+                        
+                    </div>
+                    <div v-if="!reloaded">
+
+                    </div>
+                    
                 </div>
+                <!--Divider-->
                 <div class="w-full h-[2px] flex justify-center items-center px-3">
                     <div class="bg-gray-200 h-full w-full rounded-full"></div>
                 </div>
                 <div class="flex justify-center items-center gap-5 w-full h-[59vh] py-5">
-                    <div class="w-[45%] h-full flex flex-col gap-3 justify-center items-center">
-			    <h1 class="text-3xl">Voltage: {{ data.voltage }}</h1>
+			        <!--Voltage-->
+                    <div v-if="reloaded == true" class="w-[45%] h-full flex flex-col gap-3 justify-center items-center">
+                        <h1 class="text-3xl">Voltage</h1>
+                        <div class="absolute">
+                            <p class="text-3xl sm:text-5xl font-bold text-red-600">{{ data.voltage }}</p>
+                            <p class="text-3xl sm:text-5xl font-bold text-blue-600">{{ data.mean }}</p>
+                        </div>
                         <Line :data="voltage" :options="voltageChart" class="bg-gray-200 rounded-md" />
                     </div>
-                    <div class="w-[45%] h-full flex flex-col gap-3 justify-center items-center">
-			    <h1 class="text-3xl">Current: {{ data.current }}</h1>
+                    <div v-if="reloaded == false" class="w-[45%] h-full flex flex-col gap-3 justify-center items-center">
+                        <h1 class="text-3xl">Voltage</h1>
+                        <div class="absolute">
+                            <p class="text-3xl sm:text-5xl font-bold text-red-600">{{ data.voltage }}</p>
+                            <p class="text-3xl sm:text-5xl font-bold text-blue-600">{{ data.mean }}</p>
+                        </div>
+                        <Line :data="voltage" :options="voltageChart" class="bg-gray-200 rounded-md" />
+                    </div>
+                    <!--Current-->
+                    <div v-if="reloaded == true" class="w-[45%] h-full flex flex-col gap-3 justify-center items-center">
+                        <h1 class="text-3xl">Current</h1>
+                        <p class="text-3xl sm:text-5xl font-bold text-red-600 absolute">{{ data.current }}</p>
+                        <Line :data="current" :options="currentChart" class="bg-gray-200 rounded-md" />
+                    </div>
+                    <div v-if="reloaded == false" class="w-[45%] h-full flex flex-col gap-3 justify-center items-center">
+                        <h1 class="text-3xl">Current</h1>
+                        <p class="text-3xl sm:text-5xl font-bold text-red-600 absolute">{{ data.current }}</p>
                         <Line :data="current" :options="currentChart" class="bg-gray-200 rounded-md" />
                     </div>
                 </div>
