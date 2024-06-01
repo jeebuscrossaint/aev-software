@@ -1,19 +1,19 @@
-import { app as o, BrowserWindow as t } from "electron";
-function e(n = "/") {
-  new t({
-    width: 900,
-    height: 700,
+import { app as e, BrowserWindow as i } from "electron";
+function n(o = "/") {
+  new i({
+    width: 700,
+    height: 900,
     webPreferences: {
       nodeIntegration: !0,
       contextIsolation: !1
     },
     autoHideMenuBar: !0,
     icon: "../public/favicon.ico"
-  }).loadURL(`${process.env.VITE_DEV_SERVER_URL}/#${n}`);
+  }).loadURL(`${process.env.VITE_DEV_SERVER_URL}/#${o}`);
 }
-o.whenReady().then(() => {
-  e("/"), e("/bms"), e("/motorController");
+e.whenReady().then(() => {
+  n("/"), n("/bms");
 });
-o.on("window-all-closed", () => {
-  o.quit();
+e.on("window-all-closed", () => {
+  e.quit();
 });

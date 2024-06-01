@@ -1,3 +1,0 @@
-<template>
-    hello mcu
-</template>

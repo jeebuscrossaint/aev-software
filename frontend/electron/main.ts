@@ -4,8 +4,9 @@ import { app, BrowserWindow } from 'electron'
 
 // const __dirname = path.dirname(fileURLToPath(import.meta.url));
 function createWindow(route = '/') { //creates electron windows
-  let win = new BrowserWindow({width: 900,
-    height: 700,
+  let win = new BrowserWindow({
+    width: 700,
+    height: 900,
     webPreferences: {
         nodeIntegration: true,
         contextIsolation: false,
@@ -21,7 +22,6 @@ function createWindow(route = '/') { //creates electron windows
 app.whenReady().then(() => {
   createWindow('/');
   createWindow('/bms');
-  createWindow('/motorController');
 });
 app.on('window-all-closed', () => {
   app.quit();

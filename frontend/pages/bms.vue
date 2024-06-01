@@ -5,9 +5,8 @@
     import * as chartConfig from '/assets/js/chartInfo.js'
     import {Chart as ChartJS,CategoryScale,LinearScale,PointElement,LineElement,Title,Tooltip,Legend,Filler,Decimation,ArcElement} from 'chart.js';
     
-    ChartJS.register(CategoryScale,LinearScale,PointElement,LineElement,Title,Tooltip,Legend,Filler,Decimation,ArcElement);
-
     // Data for chart renders & reactivity
+    ChartJS.register(CategoryScale,LinearScale,PointElement,LineElement,Title,Tooltip,Legend,Filler,Decimation,ArcElement);
     let reloaded = ref(true);
     const voltageChart = chartConfig.voltageChart;
     const currentChart = chartConfig.currentChart;
@@ -15,6 +14,7 @@
     const voltage = ref(chartConfig.getVoltage([0, 0, 0, 0, 0, 0, 0, 0, 0]));
     const current = ref(chartConfig.getCurrent([0, 0, 0, 0, 0, 0, 0, 0, 0]));
     const battery = ref(chartConfig.getBattery([0,100]));
+
     // Functions to update charts
     function updateVoltage(newVoltage, newMean){
         for (let i = 0; i < voltage.value.datasets[0].data.length; i++) {
@@ -50,19 +50,28 @@
     function updateBattery(newCharge){
         battery.value.datasets[0].data[0] = newCharge;
         battery.value.datasets[0].data[1] = 100-newCharge;
+        if(40 < newCharge && newCharge <= 100){
+            battery.value.datasets[0].backgroundColor[0] = 'Green'
+        }
+        else if(10 < newCharge && newCharge <= 40){
+            battery.value.datasets[0].backgroundColor[0] = 'Orange'
+        }
+        else if(newCharge <= 10){
+            battery.value.datasets[0].backgroundColor[0] = 'Red'
+        }
     }
 
-    // Data & Error Refs for direct HTML access
+    // Data & Error Refs for template access (reactivity)
     let data = ref({
-        "voltage":"91.84v",
-        "cells":"30(notlocked)",
-        "mean":"3.062v",
-        "stddev":"0.037v",
-        "alerts":"notlocked",
-        "current":"-0.2A",
-        "SOC":"4%",
-        "uptime":["0","34","26"]
-    })
+        "voltage":"0v",
+        "cells":"0",
+        "mean":"0v",
+        "stddev":"0v",
+        "alerts":"none",
+        "current":"0A",
+        "SOC":"0%",
+        "uptime":["00","00","00"]
+    });
     let error = ref({});
 
     // Stream to receive backend data & update graphs
@@ -84,18 +93,42 @@
         error.value = content;
     });
 
-    // Testing Graphs
+    // Testing Graphs & Values -- COMMENT THIS OUT WHEN PLUGGING IN BMS
     onMounted(() => {
+        function rand(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+        data.value = {
+            "voltage":"91.84v",
+            "cells":"30(notlocked)",
+            "mean":"3.062v",
+            "stddev":"0.037v",
+            "alerts":"notlocked",
+            "current":"-5.2A",
+            "SOC":"4%",
+            "uptime":["0","34","26"]
+        }
+        let battIteration = 0;
         setInterval(async () => {
             // Voltage
-            updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
+            let randVolt = rand(75, 90);
+            data.value.voltage = Math.round(randVolt * 100) / 100;
+            updateVoltage(randVolt, rand(10, 20));
             // Current
-            updateCurrent(Number((data.value.current).slice(0, -1)));
+            let randCurr = rand(-8, 10);
+            data.value.current = Math.round(randCurr * 100) / 100;
+            updateCurrent(randCurr);
             // Battery
-            updateBattery(Number((data.value.SOC).slice(0, -1)));
+            let battCycl = [100, 74, 40, 26, 10, 4];
+            data.value.SOC = battCycl[battIteration];
+            updateBattery(battCycl[battIteration]);
+            battIteration++;
+            if(battIteration == 6){
+                battIteration = 0;
+            }
             // Reload Graphs
             reloaded.value = !(reloaded.value)
-        }, 1250);
+        }, 800);
     });
 </script>
 <template>
@@ -135,20 +168,20 @@
 			        <!--Voltage-->
                     <div v-if="reloaded == true" class="w-[45%] h-full flex flex-col gap-3 justify-center items-center">
                         <h1 class="text-3xl">Voltage: {{ data.voltage }}</h1>
-                        <Line :data="voltage" :options="voltageChart" class="bg-gray-200 rounded-md" />
+                        <Line :data="voltage" :options="voltageChart" class="bg-gray-200 rounded-md w-full" />
                     </div>
                     <div v-if="reloaded == false" class="w-[45%] h-full flex flex-col gap-3 justify-center items-center">
                         <h1 class="text-3xl">Voltage: {{ data.voltage }}</h1>
-                        <Line :data="voltage" :options="voltageChart" class="bg-gray-200 rounded-md" />
+                        <Line :data="voltage" :options="voltageChart" class="bg-gray-200 rounded-md w-full" />
                     </div>
                     <!--Current-->
                     <div v-if="reloaded == true" class="w-[45%] h-full flex flex-col gap-3 justify-center items-center">
                         <h1 class="text-3xl">Current: {{ data.current }}</h1>
-                        <Line :data="current" :options="currentChart" class="bg-gray-200 rounded-md" />
+                        <Line :data="current" :options="currentChart" class="bg-gray-200 rounded-md w-full" />
                     </div>
                     <div v-if="reloaded == false" class="w-[45%] h-full flex flex-col gap-3 justify-center items-center">
                         <h1 class="text-3xl">Current: {{ data.current }}</h1>
-                        <Line :data="current" :options="currentChart" class="bg-gray-200 rounded-md" />
+                        <Line :data="current" :options="currentChart" class="bg-gray-200 rounded-md w-full" />
                     </div>
                 </div>
             </div>

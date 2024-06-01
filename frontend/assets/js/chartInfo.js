@@ -38,7 +38,7 @@ let voltage = {
 };
 
 export const voltageChart = {
-    responsive: true,
+    responsive: false,
     maintainAspectRatio: true,
     animation: false,
     plugins: {
@@ -109,7 +109,7 @@ let current = {
 };
 
 export const currentChart = {
-    responsive: true,
+    responsive: false,
     maintainAspectRatio: true,
     animation: false,
     plugins: {
@@ -153,13 +153,19 @@ export function getCurrent(newData){
 /***********BATTERY***********/ 
 
 let battery = {
-    labels: ["Charged", "Empty"],
+    labels: ["Good", "Warning", "Charge"],
     datasets: [
         {
             label: 'Charge',
-            data: [0, 100],
-            backgroundColor: ["Green", "Gray"],
+            data: [0, 0, 100],
+            backgroundColor: ["Orange", "Gray"],
             cutout: '70%'
+        },
+        {
+            label: 'Charge',
+            data: [0.81, 2.45, 4.9],
+            backgroundColor: ["Red", "Orange", "Green"],
+            cutout: '80%'
         }
     ]
 };
