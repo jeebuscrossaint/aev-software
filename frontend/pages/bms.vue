@@ -113,7 +113,7 @@
             // Voltage
             let randVolt = rand(75, 90);
             data.value.voltage = Math.round(randVolt * 100) / 100;
-            updateVoltage(randVolt, rand(10, 20));
+            updateVoltage(randVolt, randVolt/30);
             // Current
             let randCurr = rand(-8, 10);
             data.value.current = Math.round(randCurr * 100) / 100;
@@ -131,16 +131,22 @@
         }, 800);
     });
 </script>
+
 <template>
+    <!--Shows Error Page if BMS backend isn't working-->
     <div v-if="JSON.stringify(error)!='{}'">
         Error: {{ JSON.stringify(error) }}
     </div>
+    <!--Shows Functional Page if there aren't any issues-->
     <div v-else>
+        <!--Full Screen Container-->
         <div class="w-screen flex justify-center items-center">
+            <!--Content Container-->
             <div class="w-full h-full flex flex-col justify-center items-center flex-wrap max-w-[900px]">
                 <!--Logo-->
                 <img src="/alsetSideLogo.png" alt="" class="absolute top-5 w-[150px] sm:w-[200px]">
-                <div class="flex gap-5 h-[40vh] w-[95%] p-5 justify-between items-center">
+                <!--Top Section-->
+                <section class="flex gap-5 h-[40vh] w-[95%] p-5 justify-between items-center">
                     <!--Battery Info Text-->
                     <div class="flex flex-col gap-5">
                         <h1 class="text-3xl sm:text-5xl font-semibold">Battery</h1> 
@@ -159,13 +165,14 @@
                         <h1 class="text-4xl sm:text-6xl font-bold absolute"><br>{{ data.SOC }}</h1>
                         <Doughnut :data="battery" :options="batteryChart" class="w-full" />
                     </div>
-                </div>
-                <!--Divider-->
+                </section>
+                <!--Div ider (bc its a div & divider... heh)-->
                 <div class="w-full h-[2px] flex justify-center items-center px-3">
                     <div class="bg-gray-200 h-full w-full rounded-full"></div>
                 </div>
-                <div class="flex justify-center items-center gap-5 w-full h-[59vh] py-5">
-			        <!--Voltage-->
+                <!--Bottom Section-->
+                <section class="flex justify-center items-center gap-5 w-full h-[59vh] py-5">
+			        <!--Voltage Graph-->
                     <div v-if="reloaded == true" class="w-[45%] h-full flex flex-col gap-3 justify-center items-center">
                         <h1 class="text-3xl">Voltage: {{ data.voltage }}</h1>
                         <Line :data="voltage" :options="voltageChart" class="bg-gray-200 rounded-md w-full" />
@@ -174,7 +181,7 @@
                         <h1 class="text-3xl">Voltage: {{ data.voltage }}</h1>
                         <Line :data="voltage" :options="voltageChart" class="bg-gray-200 rounded-md w-full" />
                     </div>
-                    <!--Current-->
+                    <!--Current Graph-->
                     <div v-if="reloaded == true" class="w-[45%] h-full flex flex-col gap-3 justify-center items-center">
                         <h1 class="text-3xl">Current: {{ data.current }}</h1>
                         <Line :data="current" :options="currentChart" class="bg-gray-200 rounded-md w-full" />
@@ -183,8 +190,9 @@
                         <h1 class="text-3xl">Current: {{ data.current }}</h1>
                         <Line :data="current" :options="currentChart" class="bg-gray-200 rounded-md w-full" />
                     </div>
-                </div>
+                </section>
             </div>
         </div>
     </div>
+    <!--Divmania lol-->
 </template>

@@ -10,7 +10,7 @@ let voltage = {
             color: '#ffffff',
             fill: {
                 target: 'origin',
-                above: 'rgba(127, 159, 229,0.8)',   // Area will be red above the origin
+                above: 'rgba(127, 159, 229,0.8)',
             },
             tension: 0.1,
             pointStyle: false,
@@ -26,7 +26,7 @@ let voltage = {
             color: '#ffffff',
             fill: {
                 target: 'origin',
-                above: 'rgba(255, 0, 0,0.3)',   // Area will be red above the origin
+                above: 'rgba(255, 0, 0,0.3)', 
             },
             tension: 0.1,
             pointStyle: false,
@@ -92,11 +92,11 @@ let current = {
       {
         label: 'Voltage',
         backgroundColor: 'rgb(0,0,128)',
-        borderColor: '#f87979',
+        borderColor: '#4D6CAF',
         color: '#ffffff',
         fill: {
             target: 'origin',
-            above: 'rgba(255, 0, 0,0.3)',   // Area will be red above the origin
+            above: 'rgba(0, 255, 0,0.3)',
             below: 'rgba(255, 0, 0,0.3)'
         },
         tension: 0.1,
@@ -138,8 +138,8 @@ export const currentChart = {
             grid: {
                 drawTicks: false,
             },
-            max: 50,
-            min: -50
+            max: 30,
+            min: -30
         }
     },
     aspectRatio: 1/1,
