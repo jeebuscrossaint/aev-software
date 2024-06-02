@@ -135,7 +135,38 @@
 <template>
     <!--Shows Error Page if BMS backend isn't working-->
     <div v-if="JSON.stringify(error)!='{}'">
-        Error: {{ JSON.stringify(error) }}
+        <div class="w-screen h-screen flex justify-center items-center bg-[#F9FBFD] p-2">
+            <img src="/alsetSideLogo.png" alt="" class="absolute top-5 w-[150px] sm:w-[200px] hidden sm:block">
+            <div class="min-w-[75vw] min-h-[50vh] bg-[rgba(0,0,0,0.3)] rounded-3xl flex flex-col items-center py-2 sm:py-10 gap-3">
+                <h1 class="font-bold text-4xl sm:text-5xl bg-gradient-to-r from-blue-500 via-black to-red-500 inline-block text-transparent bg-clip-text">
+                    An error has occured!
+                </h1>
+
+                <p class="text-lg sm:text-2xl min-w-[80%] text-left">
+                    <br>
+                    <strong>Error message:</strong> {{ JSON.stringify(error) }}
+                    <br><br>
+                </p>
+
+                <p class="text-lg sm:text-xl min-w-[80%] text-left font-bold">Things to check</p>
+                <ul class="list-disc text-md sm:text-lg min-w-[80%] max-w-[85%]">
+                    <li>Make sure the BMS is on & connected to the RPI.</li>
+                    <li>Make sure the 12v battery is charged, plugged in, & on.</li>
+                </ul>
+
+                <p class="text-lg sm:text-xl min-w-[80%] text-left font-bold">Things to try</p>
+                <ul class="list-disc text-md sm:text-lg min-w-[80%] max-w-[85%]">
+                    <li>Restarting the BMS first, then the RPI.</li>
+                    <li>Restart just the BMS.</li>
+                    <li>Restart just the RPI.</li>
+                    <li>Unplug & replug the BMS then restart the RPI.</li>
+                    <li>Grab Zach or Amarnath & debug the issue with a keyboard.</li>
+                </ul>
+            </div>
+            
+            
+            
+        </div>
     </div>
     <!--Shows Functional Page if there aren't any issues-->
     <div v-else>
