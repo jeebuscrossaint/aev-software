@@ -11,8 +11,10 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@tresjs/nuxt": "^2.1.2",
     "chart.js": "^4.4.3",
     "nuxt": "3.6.5",
+    "three": "^0.165.0",
     "vue": "^3.4.27",
     "vue-chartjs": "^5.3.1",
     "vue-router": "^4.3.2"

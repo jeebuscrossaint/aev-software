@@ -22,6 +22,7 @@ function createWindow(route = '/') { //creates electron windows
 app.whenReady().then(() => {
   createWindow('/');
   createWindow('/bms');
+  createWindow('/road')
 });
 app.on('window-all-closed', () => {
   app.quit();

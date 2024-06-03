@@ -1,7 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: false },
-  modules: ['nuxt-electron'],
+  modules: [
+    'nuxt-electron',
+    '@tresjs/nuxt'
+  ],
   electron: {
     build: [
       {
