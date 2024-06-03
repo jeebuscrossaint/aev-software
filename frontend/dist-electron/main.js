@@ -1,5 +1,5 @@
-import { app as n, BrowserWindow as i } from "electron";
-function e(o = "/") {
+import { app as e, BrowserWindow as i } from "electron";
+function n(o = "/") {
   new i({
     width: 700,
     height: 900,
@@ -11,9 +11,9 @@ function e(o = "/") {
     icon: "../public/favicon.ico"
   }).loadURL(`${process.env.VITE_DEV_SERVER_URL}/#${o}`);
 }
-n.whenReady().then(() => {
-  e("/"), e("/bms"), e("/road");
+e.whenReady().then(() => {
+  n("/"), n("/bms");
 });
-n.on("window-all-closed", () => {
-  n.quit();
+e.on("window-all-closed", () => {
+  e.quit();
 });

@@ -1,0 +1,3 @@
+<script>
+ // TODO: make the car scene a component here...
+</script>
