@@ -1,6 +1,6 @@
-import { app as e, BrowserWindow as i } from "electron";
-function n(o = "/") {
-  new i({
+import { app as n, BrowserWindow as t } from "electron";
+function e(o = "/") {
+  new t({
     width: 700,
     height: 900,
     webPreferences: {
@@ -11,9 +11,9 @@ function n(o = "/") {
     icon: "../public/favicon.ico"
   }).loadURL(`${process.env.VITE_DEV_SERVER_URL}/#${o}`);
 }
-e.whenReady().then(() => {
-  n("/"), n("/bms");
+n.whenReady().then(() => {
+  e("/"), e("/bms"), e("/betterImpl");
 });
-e.on("window-all-closed", () => {
-  e.quit();
+n.on("window-all-closed", () => {
+  n.quit();
 });
