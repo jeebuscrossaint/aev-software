@@ -57,8 +57,8 @@ export default {
         let movingMarker;
         let scene = new THREE.Scene();
         let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 2, 0);
-        camera.lookAt(new THREE.Vector3(-7, -2, 0));
+        camera.position.set(1.5, 2, 0);
+        camera.lookAt(new THREE.Vector3(-7, -0, 0)); // LOW: (-7, -1.5, 0) 
 
         let renderer = new THREE.WebGLRenderer({ antialias: false });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -74,7 +74,7 @@ export default {
             const material = new THREE.MeshPhongMaterial( { color: '#ACACAC', specular: 0x494949, shininess: 400 } );
             const mesh = new THREE.Mesh( geometry, material );
 
-            mesh.position.set( -2.65, 0.9, 0.51 );
+            mesh.position.set( -2.65, 0.83, 0.51 );
             mesh.rotation.set( -Math.PI/2, 0, 0 );
             mesh.scale.set( 0.00065, 0.00065, 0.00065 );
 
@@ -91,13 +91,13 @@ export default {
 
 
         // Road
-        geometry = new THREE.BoxGeometry(100, 0.1, 3);
+        geometry = new THREE.BoxGeometry(200, 0.1, 3);
         material = new THREE.MeshBasicMaterial({ color: '#343434' });
         mesh = new THREE.Mesh(geometry, material);
         scene.add(mesh);
 
         // Road side
-        geometry = new THREE.BoxGeometry(50, 0.12, 0.05);
+        geometry = new THREE.BoxGeometry(200, 0.12, 0.05);
         material = new THREE.MeshBasicMaterial({ color: '#f0f0f0' });
         let side1 = new THREE.Mesh(geometry, material);
         side1.position.set(0, 0, 1.35);
