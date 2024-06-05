@@ -67,16 +67,16 @@ export default {
         // adds scene to template
         this.$el.querySelector('#sceneContainer').appendChild(renderer.domElement);
 
-        // STL?
+        // Car (STL in threejs woohoo definitely not cursed)
         const loader = new STLLoader();
-        loader.load( 'testCar.stl', function ( geometry ) {
+        loader.load( 'car.stl', function ( geometry ) {
 
             const material = new THREE.MeshPhongMaterial( { color: '#ACACAC', specular: 0x494949, shininess: 400 } );
             const mesh = new THREE.Mesh( geometry, material );
 
-            mesh.position.set( -1.65, 0.9, -0.38 );
-            mesh.rotation.set( 0, 0, -0.04 );
-            mesh.scale.set( 0.02, 0.02, 0.02 );
+            mesh.position.set( -2.65, 0.9, 0.51 );
+            mesh.rotation.set( -Math.PI/2, 0, 0 );
+            mesh.scale.set( 0.00065, 0.00065, 0.00065 );
 
             mesh.castShadow = true;
             mesh.receiveShadow = true;
@@ -91,7 +91,7 @@ export default {
 
 
         // Road
-        geometry = new THREE.BoxGeometry(100, 0.1, 2);
+        geometry = new THREE.BoxGeometry(100, 0.1, 3);
         material = new THREE.MeshBasicMaterial({ color: '#343434' });
         mesh = new THREE.Mesh(geometry, material);
         scene.add(mesh);
@@ -100,12 +100,12 @@ export default {
         geometry = new THREE.BoxGeometry(50, 0.12, 0.05);
         material = new THREE.MeshBasicMaterial({ color: '#f0f0f0' });
         let side1 = new THREE.Mesh(geometry, material);
-        side1.position.set(0, 0, 0.9);
+        side1.position.set(0, 0, 1.35);
         scene.add(side1);
         console.log(side1.material.color)
         // Other road side
         let side2 = side1.clone();
-        side2.position.set(0, 0, -0.9);
+        side2.position.set(0, 0, -1.35);
         scene.add(side2);
         // updates road side colors
         function updateSideColors() {
