@@ -11,6 +11,7 @@
 
 <script>
 import * as THREE from 'three';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 
 // I hate that I have to write all the code in an export because its so weird but like idk how else to do it bc this treats it like a vue component even though its the page
 // I could also make the whole scene a component with a prop for speed but eh I'll do that some other time... TODO ig lol
@@ -65,6 +66,29 @@ export default {
 
         // adds scene to template
         this.$el.querySelector('#sceneContainer').appendChild(renderer.domElement);
+
+        // STL?
+        const loader = new STLLoader();
+        loader.load( 'testCar.stl', function ( geometry ) {
+
+            const material = new THREE.MeshPhongMaterial( { color: '#ACACAC', specular: 0x494949, shininess: 400 } );
+            const mesh = new THREE.Mesh( geometry, material );
+
+            mesh.position.set( -1.65, 0.9, -0.38 );
+            mesh.rotation.set( 0, 0, -0.04 );
+            mesh.scale.set( 0.02, 0.02, 0.02 );
+
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            scene.add( mesh );
+
+        } );
+
+        scene.add( new THREE.HemisphereLight( '#CBCBCB', '#000000', 9 ) );
+
+
+
 
         // Road
         geometry = new THREE.BoxGeometry(100, 0.1, 2);
