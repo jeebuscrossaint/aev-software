@@ -91,7 +91,7 @@ export default {
 
 
         // Road
-        geometry = new THREE.BoxGeometry(200, 0.1, 3);
+        geometry = new THREE.BoxGeometry(200, 0.1, 3.2);
         material = new THREE.MeshBasicMaterial({ color: '#343434' });
         mesh = new THREE.Mesh(geometry, material);
         scene.add(mesh);
@@ -119,24 +119,65 @@ export default {
             }
         }
 
+        function getInterval(){
+            if(MULTIPLIER <= 0){
+                return 9999;
+            }
+            else{
+                return (3500 / MULTIPLIER)
+            }
+        }
+
         // creates interval for infinite markers
         function createMarker() {
             geometry = new THREE.BoxGeometry(1, 0.12, 0.1);
-            material = new THREE.MeshBasicMaterial({ color: 'yellow' });
+            material = new THREE.MeshBasicMaterial({ color: 'red' });
             movingMarker = new THREE.Mesh(geometry, material);
-            movingMarker.position.set(-35, 0, 0);
+            movingMarker.position.set(-60, 0, 1.5);
             movingMarker.userData.isMarker = true;
             scene.add(movingMarker);
-            updateSideColors();
-        } setInterval(createMarker, (1000 / MULTIPLIER) * 5);
-        // preset markers
-        for(let i = 0; i < 38; i+=3){
+
+            let movingMarker2 = movingMarker.clone();
+            movingMarker2.position.set(-60, 0, -1.5);
+            scene.add(movingMarker2);
+
             geometry = new THREE.BoxGeometry(1, 0.12, 0.1);
-            material = new THREE.MeshBasicMaterial({ color: 'yellow' });
+            material = new THREE.MeshBasicMaterial({ color: 'white' });
+            let movingMarkerWhite = new THREE.Mesh(geometry, material);
+            movingMarkerWhite.position.set(-60+1, 0, 1.5);
+            movingMarkerWhite.userData.isMarker = true;
+            scene.add(movingMarkerWhite);
+
+            let movingMarkerWhite2 = movingMarkerWhite.clone();
+            movingMarkerWhite2.position.set(-60+1, 0, -1.5);
+            scene.add(movingMarkerWhite2);
+            updateSideColors();
+        } setInterval(createMarker, (3500 / (MULTIPLIER+1))); 
+
+        // preset markers
+        for(let i = 0; i < 62; i+=2){
+            geometry = new THREE.BoxGeometry(1, 0.12, 0.1);
+            material = new THREE.MeshBasicMaterial({ color: 'red' });
             movingMarker = new THREE.Mesh(geometry, material);
-            movingMarker.position.set(-i, 0, 0);
+            movingMarker.position.set(-i, 0, 1.5);
             movingMarker.userData.isMarker = true;
             scene.add(movingMarker);
+
+            let movingMarker2 = movingMarker.clone();
+            movingMarker2.position.set(-i, 0, -1.5);
+            scene.add(movingMarker2);
+
+            geometry = new THREE.BoxGeometry(1, 0.12, 0.1);
+            material = new THREE.MeshBasicMaterial({ color: 'white' });
+            let movingMarkerWhite = new THREE.Mesh(geometry, material);
+            movingMarkerWhite.position.set(-i+1, 0, 1.5);
+            movingMarkerWhite.userData.isMarker = true;
+            scene.add(movingMarkerWhite);
+
+            let movingMarkerWhite2 = movingMarkerWhite.clone();
+            movingMarkerWhite2.position.set(-i+1, 0, -1.5);
+            scene.add(movingMarkerWhite2);
+            
         }
         // animates all markers including new ones
         function animate() {
@@ -152,9 +193,9 @@ export default {
         } animate();
 
         // Test speed reactivity
-        // setInterval(() => {
-        //     MULTIPLIER += 1;
-        // }, 500);
+        setInterval(() => {
+            MULTIPLIER += 1;
+        }, 500);
     }
 }
 </script>
