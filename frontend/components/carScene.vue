@@ -13,51 +13,14 @@ export default {
         speedToggle: {
             type: Number,
             default: 0,
-        },
-        speedColor: {
-            type: Number,
-            default: 0,
-        },
+        }
     },
     mounted() {
-        let MULTIPLIER = this.speedToggle; // THIS WILL BE THE CARS SPEED ONCE WE CAN GET THE DATA
+        let MULTIPLIER = this.speedToggle;
 
         this.$watch('speed', (newSpeed, oldSpeed) => {
             MULTIPLIER = newSpeed;
         });
-
-        function getColorForSpeed(speed) {
-            // colors to interpolate between
-            const green = { r: 144, g: 238, b: 144 };      
-            const yellow = { r: 255, g: 165, b: 0 };       
-            const red = { r: 227, g: 87, b: 77 };            
-
-            // (we can change this once we know how fast it can go lol)
-            const maxSpeed = 40;
-
-            // ill be honest the rest of this function is AI generated fanciness to interpolate what color it should return dependent on the speed
-            speed = Math.max(0, Math.min(speed, maxSpeed));
-            let color;
-            if (speed <= maxSpeed / 2) {
-                // Interpolate between green and yellow
-                let t = speed / (maxSpeed / 2);
-                color = {
-                    r: Math.round(green.r + t * (yellow.r - green.r)),
-                    g: Math.round(green.g + t * (yellow.g - green.g)),
-                    b: Math.round(green.b + t * (yellow.b - green.b))
-                };
-            } else {
-                // Interpolate between yellow and red
-                let t = (speed - (maxSpeed / 2)) / (maxSpeed / 2);
-                color = {
-                    r: Math.round(yellow.r + t * (red.r - yellow.r)),
-                    g: Math.round(yellow.g + t * (red.g - yellow.g)),
-                    b: Math.round(yellow.b + t * (red.b - yellow.b))
-                };
-            }
-
-            return `rgb(${color.r}, ${color.g}, ${color.b})`;
-        }
 
         // Threejs setup
         let geometry, material, mesh;
@@ -112,17 +75,6 @@ export default {
         let side2 = side1.clone();
         side2.position.set(0, 0, -1.35);
         scene.add(side2);
-        // updates road side colors
-        function updateSideColors() {
-            if (this.speedColor == 0) {
-                side1.material.color.set(getColorForSpeed("#F9FBFD"));
-                side2.material.color.set(getColorForSpeed("#F9FBFD"));
-            }
-            else{
-                side1.material.color.set(getColorForSpeed(this.speedColor));
-                side2.material.color.set(getColorForSpeed(this.speedColor));
-            }
-        }
 
         // creates interval for infinite markers
         function createMarker() {
@@ -147,7 +99,6 @@ export default {
             let movingMarkerWhite2 = movingMarkerWhite.clone();
             movingMarkerWhite2.position.set(-60+1, 0, -1.5);
             scene.add(movingMarkerWhite2); 
-            updateSideColors();
         } setInterval(createMarker, (3500 / (MULTIPLIER+1))); 
         // preset markers
         for(let i = 0; i < 62; i+=2){
