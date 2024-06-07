@@ -128,7 +128,7 @@
             }
             // Reload Graphs
             reloaded.value = !(reloaded.value)
-        }, 800);
+        }, 250);
     });
 </script>
 
