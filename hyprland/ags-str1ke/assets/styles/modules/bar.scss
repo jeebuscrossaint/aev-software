@@ -1,0 +1,263 @@
+.bar { 
+    margin: 8px;
+    border-radius: 12px;
+    background-color: $crust;
+}
+
+.bar-launcher {
+    // background-color: red;
+    button {
+        padding: 6px;
+        margin: 4px 0px 6px 10px;
+        border-radius: 20px;
+        // padding: 2px;
+        &:hover {
+            background-color: $base;
+        }
+    }
+}
+
+.bar-workspaces {
+    margin: 4px 12px 4px 0px;
+    background-color: $mantle;
+    padding: 0px 2px;
+    border-radius: 8px;
+    border: 1.5px solid $base;
+
+    button {
+        background-color: transparent;
+        font-size: 32px;
+        font-weight: bolder;
+        color: $overlay1;
+        margin: 0px 1px;
+        border-radius: 10px;
+        padding: 0px 4px;
+        transition: padding 0.2s cubic-bezier(0.12, 0, 0.39, 0);
+
+        &:hover {
+            background-color: $surface0;
+        }
+
+        &.bw-unoccupied {
+            color: $overlay1;
+            padding: 0px 12px;
+        }
+        &.bw-occupied {
+            color: $lavender;
+            padding: 0px 12px;
+        }
+        &.bw-focused {
+            color: $mauve;
+            font-weight: bolder;
+            // background-color: $surface0;
+            border: 1.5px solid $mauve;
+            border-radius: 5px;
+            // margin: 0px 54px;
+            padding: 0px 20px;
+        }
+    }
+}
+
+.bar-title {
+    margin: 4px;
+    border-radius: 10px;
+    padding: 0px 6px;
+    color: $text;
+    background-color: $mantle;
+    border: 1.5px solid $base;
+    font-size: 16px;
+    font-weight: bolder;
+}
+
+// .bar-notification {
+// }
+// .bnf-icon {
+//     margin: 0px 5px 0px 4px;
+// }
+.bnf-button {
+    background-color: $mantle;
+    border-radius: 8px;
+    margin: 4px 4px;
+    padding: 0px 4px;
+    border: 1.5px solid $base;
+    font-size: 12px;
+    &:hover {
+        background-color: $surface0;
+    }
+}
+.bnf-label {
+    margin: 0px 4px;
+}
+.bnf-notif-critical {
+    border: 2px solid $red;
+    padding: 0px 6px;
+    border-radius: 8px;
+}
+
+.bar-battery progressbar {
+    margin: 0 6px;
+    border-radius: 5px;
+}
+
+.bar-clock-revealer {
+    margin: 0px 6px;
+    font-size: 19px;
+}
+.bcr-clock {
+    color: $text;
+    font-weight: bold;
+    padding: 0px 6px 0px 4px;
+    font-size: 24px;
+}
+.bcr-date {
+    color: $text;
+    font-weight: normal;
+    font-size: 22px;
+    padding: 0px 6px 0px 6px;
+}
+
+.bar-clock-button {
+    background-color: $mantle;
+    margin: 4px;
+    padding: 0px 6px;
+    font-size: 30px;
+    color: $text;
+    border-radius: 10px;
+    border: 1.5px solid $base;
+    &:hover {
+        background-color: $surface0;
+    }
+}
+
+progress, highlight {
+    background-color: $mauve;
+    min-height: 8px;
+    border-radius: 8px;
+}
+
+.bar-systray {
+    margin: 4px 5px;
+    padding: 0px 4px;
+    background-color: $mantle;
+    border: 1.5px solid $base;
+    border-radius: 10px;
+    button {
+        margin: 0px;
+        padding: 4px;
+        border-radius: 10px;
+    }
+    button:hover {
+        background-color: $base;
+    }
+}
+
+.bar-separator {
+    margin: 3px;
+    // padding: 0px 8px;
+    label {
+        font-size: 14px; 
+        color: $overlay0;
+    }
+}
+
+.bar-media {
+    background-color: $mantle;
+    border-radius: 8px;
+    margin: 4px;
+    border: 1.5px solid $base;
+    // padding: 0px 5px 0px 0px;
+    &:hover {
+        background-color: $surface0;
+    }
+}
+.bm-title {
+    color: $text;
+    font-size: 16px;
+    margin: 0px 6px 0px 0px;
+}
+.bm-icon {
+    margin: 0px 5px 0px 4px;
+}
+
+// .bar-volume {
+// }
+.bv-icon {
+    margin: 0px 12px;
+    font-size: 22px;
+    color: $text;
+}
+.bv-slider {
+    scale {
+        margin: 0px 8px;
+        contents {
+            trough {
+                slider {
+                    background-color: $mantle;
+                    box-shadow: 0 0 0 2.5px $text;
+                    &:hover {
+                        background-color: $surface2;
+                    }
+                }
+                highlight {
+                    background-color: $mauve;
+                }
+                background-color: $surface0;
+                border-radius: 10px;
+            }
+            margin: 0px 4px;
+        }
+    }
+}
+
+// .bar-battery {
+// }
+.bb-icon {
+    margin: 0px 12px;
+    font-size: 20px;
+    color: $text;
+}
+// .bb-progress {
+//     // margin: 0px 8px;
+//     trough {
+//         highlight {
+//             // background-color: $green;
+//         }
+//         background-color: $surface0;
+//         // border-radius: 10px;
+//         // padding: 2px 0px;
+//     }
+// }
+
+.bn-icon {
+    margin: 0px 10px 0px 6px;
+    font-size: 20px;
+    color: $text;
+}
+.bn-text {
+    color: $text;
+    font-weight: bolder;
+    font-size: 16px;
+    padding: 0px 6px 0px 6px;
+}
+
+.bar-powermenu {
+    color: $red;
+    font-size: 18px;
+    margin: 0px 16px 0px 8px;
+}
+
+// .bar-system {
+//     background-color: $red;
+// }
+.bs-ram {
+    color: $red;
+    background-color: $base;
+    border-radius: 10px;
+    padding: 0px 4px;
+}
+.bs-cpu {
+    color: $lavender;
+    background-color: $base;
+    border-radius: 10px;
+    padding: 0px 4px;
+}
