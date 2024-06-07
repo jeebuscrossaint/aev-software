@@ -20,7 +20,7 @@ server.use(cors())
 const httpServer = createServer(server);
 const io = new Server(httpServer, {cors: {
     origin: '*',
-  }});
+}});
 const connections = [];
 
 function BmsData(data) {
@@ -95,6 +95,7 @@ io.on('connection', (socket) => {
     }
     else {
         io.emit('error', 'BMS is not connected')
+        console.error("BMS is not connected")
     }
     
 
