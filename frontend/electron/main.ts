@@ -1,8 +1,11 @@
 import { app, BrowserWindow } from 'electron'
+import {spawn, ChildProcess} from 'child_process';
+
 // import { fileURLToPath } from 'url';
 // import path from 'path';
 
 // const __dirname = path.dirname(fileURLToPath(import.meta.url));
+let backendProcess: ChildProcess;
 function createWindow(route = '/') { //creates electron windows
   let win = new BrowserWindow({
     width: 700,
@@ -20,10 +23,13 @@ function createWindow(route = '/') { //creates electron windows
 }
 
 app.whenReady().then(() => {
+  backendProcess = spawn('node', ['../../backend/index.js']);
   createWindow('/');
   createWindow('/bms');
   createWindow('/camera')
+  
 });
 app.on('window-all-closed', () => {
+  backendProcess.kill();
   app.quit();
 });

@@ -4,24 +4,7 @@ import { Server } from 'socket.io';
 import {createServer} from 'http';
 import express from 'express';
 import cors from 'cors';
-
-
-
-const port = new SerialPort({
-    path: '/dev/ttyUSB0',
-    baudRate: 115200,
-});
-const byteparser = port.pipe(new DelimiterParser({
-    delimiter: 'sh'
-}));
-port.open();
-const server = express(); // socketio server used as fallback in case of electron failure
-server.use(cors())
-const httpServer = createServer(server);
-const io = new Server(httpServer, {cors: {
-    origin: '*',
-}});
-const connections = [];
+import {Daemon, Listener} from 'node-gpsd';
 
 function BmsData(data) {
     // Trim the first two elements of the array and the last element of the array (useless bc first is "\r" and last is "mcu> ")
@@ -72,40 +55,6 @@ function BmsData(data) {
     return dataObj;
 }
 
-byteparser.on('data', (stream) => { //reads data
-    let data = stream.toString().split('\n');
-    let battery_data = BmsData(data);
-    console.log(battery_data);
-    io.emit('data', battery_data);
-});
-port.on('error', (err) => {io.emit('error', err)});
-
-io.on('connection', (socket) => {
-    console.log('New connection!');
-    connections.push(socket);
-    if(writeData('sh\n')) {
-        let interval = setInterval(() => {
-            if(connections.length < 1) {
-                clearInterval(interval);
-            }
-            else {
-                console.log("write success: ", writeData('sh\n'));
-            }
-        }, 1000);
-    }
-    else {
-        io.emit('error', 'BMS is not connected')
-        console.error("BMS is not connected")
-    }
-    
-
-
-});
-
-httpServer.listen(3000, () => { //starts socketio server
-    console.log('Site is running on port 3000')
-});
-
 function writeData(data) { // used to write commands to serialport
     if(!port.isOpen) {
         return false;
@@ -118,6 +67,92 @@ function writeData(data) { // used to write commands to serialport
     });
     return true;
 }
+
+const port = new SerialPort({
+    path: '/dev/ttyUSB0',
+    baudRate: 115200,
+});
+const parser = port.pipe(new DelimiterParser({
+    delimiter: 'sh'
+}));
+
+const connections = [];
+// gpsd wrapper
+const daemon = new Daemon({
+    program: 'gpsd',
+    device: '/dev/ttyACM0',
+    port: 2947,
+    pid: '/tmp/gpsd.pid',
+    readOnly: false,
+    logger: {
+        info: function() {},
+        warn: console.warn,
+        error: console.error
+    }
+});
+
+const listener = new Listener({
+    port: 2947,
+    hostname: 'localhost',
+    logger:  {
+        info: function() {},
+        warn: console.warn,
+        error: console.error
+    },
+    parse: true
+});
+const server = express(); // socketio server used as fallback in case of electron failure
+//server.use(cors())
+const httpServer = createServer(server);
+const io = new Server(httpServer, {cors: {
+    origin: '*',
+  }});
+
+port.open();
+
+daemon.start(function() {
+    console.log('Started');
+});
+
+listener.connect(() => {
+    console.log('Connected to gpsd');
+    listener.watch();
+    listener.on('TPV', (tpv) => {
+        console.log(tpv);
+        io.emit('speed_data', tpv);
+    });
+});
+
+parser.on('data', (stream) => { //reads data
+    let data = stream.toString().split('\n');
+    let battery_data = BmsData(data);
+    console.log(battery_data);
+    io.emit('bms data', battery_data);
+});
+port.on('error', (err) => {io.emit('error', err)});
+
+io.on('connection', (socket) => {
+    console.log('New connection!');
+    connections.push(socket);
+    if(!writeData('sh\n')) {
+        io.emit('error', 'BMS is not connected');
+    }
+    if(!listener.isConnected()) {
+        io.emit('error', 'GPSD is not connected');
+    }
+    socket.on('disconnect', () => {
+        console.log('User disconnected');
+        const index = connections.indexOf(socket);
+        connections.splice(index, 1);
+    
+    });
+});
+
+httpServer.listen(3000, () => { //starts socketio server
+    console.log('Site is running on port 3000')
+});
+
+
 
 
 

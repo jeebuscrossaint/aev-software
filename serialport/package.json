@@ -13,6 +13,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "node-gpsd": "^0.3.4",
     "serialport": "^12.0.0",
     "server": "^1.0.39"
   }
