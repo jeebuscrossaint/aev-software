@@ -22,8 +22,21 @@ function createWindow(route = '/') { //creates electron windows
   win.loadURL(`${process.env.VITE_DEV_SERVER_URL}/#${route}`);  
 }
 
+
 app.whenReady().then(() => {
-  backendProcess = spawn('node', ['../../backend/index.js']);
+const ls = spawn('node', ['../serialport/index.js']);
+
+ls.stdout.on('data', (data) => {
+  console.log(`stdout: ${data}`);
+});
+
+ls.stderr.on('data', (data) => {
+  console.error(`stderr: ${data}`);
+});
+
+ls.on('close', (code) => {
+  console.log(`child process exited with code ${code}`);
+}); 
   createWindow('/');
   createWindow('/bms');
   createWindow('/camera')

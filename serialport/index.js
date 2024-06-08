@@ -114,14 +114,6 @@ daemon.start(function() {
     console.log('Started');
 });
 
-listener.connect(() => {
-    console.log('Connected to gpsd');
-    listener.watch();
-    listener.on('TPV', (tpv) => {
-        console.log(tpv);
-        io.emit('speed_data', tpv);
-    });
-});
 
 parser.on('data', (stream) => { //reads data
     let data = stream.toString().split('\n');
@@ -135,6 +127,7 @@ io.on('connection', (socket) => {
     console.log('New connection!');
     connections.push(socket);
     if(!writeData('sh\n')) {
+        console.error('BMS is not connected')
         io.emit('error', 'BMS is not connected');
     }
     if(!listener.isConnected()) {
@@ -145,6 +138,15 @@ io.on('connection', (socket) => {
         const index = connections.indexOf(socket);
         connections.splice(index, 1);
     
+    });
+});
+
+listener.connect(() => {
+    console.log('Connected to gpsd');
+    listener.watch();
+    listener.on('TPV', (tpv) => {
+        console.log(tpv);
+        io.emit('speed_data', tpv);
     });
 });
 
