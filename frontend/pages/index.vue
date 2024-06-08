@@ -42,6 +42,14 @@
 
     // JOSSAYA ADD SOCKETIO BACKEND CONNECTION HERE WITH AN UNUSED PORT & LMK
 
+    // done.
+    const socket = io('http://localhost:3000', {  reconnectionDelayMax: 10000,});
+    socket.on('gps data', (content) => {
+        
+    });
+    socket.on('error', (content) => {
+ 
+    });
     onMounted(() => {
         setInterval(() => {
             // ALL THIS WILL BE UPDATED WITH SERIALPORT UPDATE THIS IS STATIC FOR NOW WITH INTERVAL TEST CASE

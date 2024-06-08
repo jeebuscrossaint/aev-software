@@ -76,7 +76,7 @@
 
     // Stream to receive backend data & update graphs
     const socket = io('http://localhost:3000', {  reconnectionDelayMax: 10000,});
-    socket.on('data', (content) => {
+    socket.on('bms data', (content) => {
         // Update All data
         data.value = content;
         // Voltage
