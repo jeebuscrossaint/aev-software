@@ -1,4 +1,6 @@
 <script setup>
+    import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
+    
     let speedToggle = ref(0);
     let speedColor = ref({
         r: '249',
@@ -43,9 +45,10 @@
     // JOSSAYA ADD SOCKETIO BACKEND CONNECTION HERE WITH AN UNUSED PORT & LMK
 
     // done.
+    // ty
     const socket = io('http://localhost:3000', {  reconnectionDelayMax: 10000,});
     socket.on('gps data', (content) => {
-        
+        speed.value = content.speedidk
     });
     socket.on('error', (content) => {
  
