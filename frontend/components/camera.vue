@@ -1,5 +1,9 @@
 <script setup>
-
+  import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
+  const socket = io('http://localhost:3000', {  reconnectionDelayMax: 10000,});
+  function switch_workspace(workspace_id){
+    socket.emit('switch_workspace', workspace_id);
+  }
 </script>
 <template>
     <div>
