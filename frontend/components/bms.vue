@@ -128,14 +128,14 @@
             }
             // Reload Graphs
             reloaded.value = !(reloaded.value)
-        }, 250);
+        }, 550);
     });
 </script>
 
 <template>
     <!--Shows Error Page if BMS backend isn't working-->
     <div v-if="JSON.stringify(error)!='{}'">
-        <div class="w-screen h-screen flex justify-center items-center bg-[#F9FBFD] p-2">
+        <div class="flex justify-center items-center bg-[#F9FBFD] p-2">
             <img src="/alsetSideLogo.png" alt="" class="absolute top-5 w-[150px] sm:w-[200px] hidden sm:block">
             <div class="min-w-[75vw] min-h-[50vh] bg-[rgba(0,0,0,0.3)] rounded-3xl flex flex-col items-center py-2 sm:py-10 gap-3">
                 <h1 class="font-bold text-4xl sm:text-5xl bg-gradient-to-r from-blue-500 via-black to-red-500 inline-block text-transparent bg-clip-text">
@@ -171,13 +171,13 @@
     <!--Shows Functional Page if there aren't any issues-->
     <div v-else>
         <!--Full Screen Container-->
-        <div class="w-screen flex justify-center items-center">
+        <div class="flex justify-center items-center h-[50vh]">
             <!--Content Container-->
-            <div class="w-full h-full flex flex-col justify-center items-center flex-wrap max-w-[900px]">
+            <div class="w-full h-full flex flex-col justify-center items-center max-w-[900px]">
                 <!--Logo-->
-                <img src="/alsetSideLogo.png" alt="" class="absolute top-5 w-[150px] sm:w-[200px]">
+                <img src="/alsetSideLogo.png" alt="" class="hidden absolute top-5 w-[150px] sm:w-[200px]">
                 <!--Top Section-->
-                <section class="flex gap-5 h-[40vh] w-[95%] p-5 justify-between items-center">
+                <section class="flex gap-5 h-[40%] w-[95%] p-5 justify-between items-center">
                     <!--Battery Info Text-->
                     <div class="flex flex-col gap-5">
                         <h1 class="text-3xl sm:text-5xl font-semibold">Battery</h1> 
@@ -202,7 +202,7 @@
                     <div class="bg-gray-200 h-full w-full rounded-full"></div>
                 </div>
                 <!--Bottom Section-->
-                <section class="flex justify-center items-center gap-5 w-full h-[59vh] py-5">
+                <section class="flex justify-center items-center gap-5 w-full h-[60%] py-5">
 			        <!--Voltage Graph-->
                     <div v-if="reloaded == true" class="w-[45%] h-full flex flex-col gap-3 justify-center items-center">
                         <h1 class="text-3xl">Voltage: {{ data.voltage }}</h1>

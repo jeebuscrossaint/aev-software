@@ -1,9 +1,9 @@
-import { app as t, BrowserWindow as r } from "electron";
+import { app as n, BrowserWindow as r } from "electron";
 import { spawn as s } from "child_process";
 let i;
-function n(o = "/") {
+function t(o = "/") {
   new r({
-    width: 700,
+    width: 1420,
     height: 900,
     webPreferences: {
       nodeIntegration: !0,
@@ -13,7 +13,7 @@ function n(o = "/") {
     icon: "../public/favicon.ico"
   }).loadURL(`${process.env.VITE_DEV_SERVER_URL}/#${o}`);
 }
-t.whenReady().then(() => {
+n.whenReady().then(() => {
   const o = s("node", ["../serialport/index.js"]);
   o.stdout.on("data", (e) => {
     console.log(`stdout: ${e}`);
@@ -21,8 +21,8 @@ t.whenReady().then(() => {
     console.error(`stderr: ${e}`);
   }), o.on("close", (e) => {
     console.log(`child process exited with code ${e}`);
-  }), n("/"), n("/bms"), n("/camera");
+  }), t("/"), t("/cameras");
 });
-t.on("window-all-closed", () => {
-  i.kill(), t.quit();
+n.on("window-all-closed", () => {
+  i.kill(), n.quit();
 });

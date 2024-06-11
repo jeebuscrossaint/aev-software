@@ -8,7 +8,7 @@ import {spawn, ChildProcess} from 'child_process';
 let backendProcess: ChildProcess;
 function createWindow(route = '/') { //creates electron windows
   let win = new BrowserWindow({
-    width: 700,
+    width: 1420,
     height: 900,
     webPreferences: {
         nodeIntegration: true,
@@ -38,9 +38,7 @@ ls.on('close', (code) => {
   console.log(`child process exited with code ${code}`);
 }); 
   createWindow('/');
-  createWindow('/bms');
-  createWindow('/camera')
-  
+  createWindow('/cameras')
 });
 app.on('window-all-closed', () => {
   backendProcess.kill();

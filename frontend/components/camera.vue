@@ -1,14 +1,9 @@
 <template>
     <div>
-      <h1>Camera Streams</h1>
       <div v-if="videoDevices.length === 0">No cameras found.</div>
-      <div class="flex w-screen">
-        <div v-for="device in videoDevices" :key="device.deviceId" class="camera-container">
-            <h2>{{ device.label || `Camera ${device.deviceId}` }}</h2>
-            <video :ref="'videoElement' + device.deviceId" autoplay></video>
-        </div>
+      <div v-for="device in videoDevices" :key="device.deviceId">
+          <video class="object-cover w-full h-full" :ref="'videoElement' + device.deviceId" autoplay></video>
       </div>
-      
     </div>
   </template>
   
@@ -50,14 +45,3 @@
     }
   }
   </script>
-  
-  <style>
-  .camera-container {
-    margin-bottom: 20px;
-  }
-  video {
-    width: 100%;
-    height: auto;
-  }
-  </style>
-  
