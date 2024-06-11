@@ -83,7 +83,23 @@
 </script>
 
 <template>
-    <div>
+    <!--Sadly due to Raspberry PI/ARM issues, we had to make the car a static image and video as opposed to a live 3D render :( -->
+    <div class="flex flex-col w-screen h-screen justify-between items-center bg-[#f9fafe] overflow-hidden">
+        <div class="w-screen flex justify-center h-[30vh]">
+            <div class="w-[25vw] max-w-[200px] h-[15vh] top-16 bg-[rgba(0,0,0,0.5)] rounded-xl border-4 flex justify-center items-center text-5xl sm:text-7xl font-bold text-white absolute" :style="`border-color: rgb(${speedColor.r}, ${speedColor.g}, ${speedColor.b})`">
+                {{ speed }}
+            </div>
+        </div>
+        <div v-if="speed <= 0" class="translate-x-[1px] max-w-[1150px]">
+            <img src="/car.png" alt="" />
+        </div> 
+        <div v-else class="max-w-[1150px]">
+            <video src="/car.mp4" autoplay loop></video>
+        </div>
+    </div>
+    <!--This was the 3D render code before we had to pivot implementations-->
+    <!--
+     <div>
         <div v-if="speed <= 0">
             <carScene :speedToggle="speedToggle" />
         </div> 
@@ -96,5 +112,6 @@
             </div>
             <img src="/alsetLogo.png" alt="Alset Logo" class="absolute bottom-3 w-[100px]">
         </div>
-    </div>
+    </div> 
+    -->
 </template> 

@@ -5,6 +5,8 @@
 </template>
 
 <script>
+/****************************** Sadly, we cannot use any of this code as the 3D render was not functional for the RPI architecture and OS. But the static asset was made using the render though so here's the code still *******************************/
+
 import * as THREE from 'three';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 
