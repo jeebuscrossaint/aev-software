@@ -7,4 +7,4 @@
 tmux new-session -d "bash -c 'cd frontend && npm run dev'"
 tmux split-window -h "bash -c 'cd serialport && sudo npm start && cat'"
 
-tmux -2 attach-session -d
+kitty --detach --title "debug" "tmux -2 attach-session -d"
