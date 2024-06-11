@@ -1,7 +1,10 @@
+<script setup>
+
+</script>
 <template>
     <div>
       <div v-if="videoDevices.length === 0">No cameras found.</div>
-      <div v-for="device in videoDevices" :key="device.deviceId">
+      <div :onclick="switch_workspace(2)" v-for="device in videoDevices" :key="device.deviceId">
           <video class="object-cover w-full h-full" :ref="'videoElement' + device.deviceId" autoplay></video>
       </div>
     </div>

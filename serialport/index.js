@@ -5,12 +5,12 @@ import {createServer} from 'http';
 import express from 'express';
 import cors from 'cors';
 import {Daemon, Listener} from 'node-gpsd';
-
+import os from 'os';
 function BmsData(data) {
     // Trim the first two elements of the array and the last element of the array (useless bc first is "\r" and last is "mcu> ")
     data.shift();
     data.shift();
-    data.pop();
+    data.pop(); 
 
     // Split each element by the colon and trim the whitespace from the beginning and end
     data = data.map((element) => {
@@ -141,11 +141,16 @@ io.on('connection', (socket) => {
     });
 });
 
+io.on('switch workspace', (workspace) => {
+    console.log('Going to cameras');
+    os.exec('hyprctl dispatch workspace '+workspace);
+})
+
 listener.connect(() => {
     console.log('Connected to gpsd');
     listener.watch();
     listener.on('TPV', (tpv) => {
-        console.log(tpv);
+console.log(tpv);
         io.emit('speed_data', tpv);
     });
 });
