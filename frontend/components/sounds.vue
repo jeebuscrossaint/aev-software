@@ -7,15 +7,15 @@
 
 <template>
     <div class="grid grid-cols-3 gap-4 py-[16px] px-[13px]">
-        <button class="bg-gray-200 text-black p-6 rounded shadow-md transition-transform hover:bouncy-hover" @click="playSound(1)">Sound 1</button>
-        <button class="bg-gray-200 text-black p-6 rounded shadow-md transition-transform hover:bouncy-hover" @click="playSound(2)">Sound 2</button>
-        <button class="bg-gray-200 text-black p-6 rounded shadow-md transition-transform hover:bouncy-hover" @click="playSound(3)">Sound 3</button>
-        <button class="bg-gray-200 text-black p-6 rounded shadow-md transition-transform hover:bouncy-hover" @click="playSound(4)">Sound 4</button>
-        <button class="bg-gray-200 text-black p-6 rounded shadow-md transition-transform hover:bouncy-hover" @click="playSound(5)">Sound 5</button>
-        <button class="bg-gray-200 text-black p-6 rounded shadow-md transition-transform hover:bouncy-hover" @click="playSound(6)">Sound 6</button>
-        <button class="bg-gray-200 text-black p-6 rounded shadow-md transition-transform hover:bouncy-hover" @click="playSound(7)">Sound 7</button>
-        <button class="bg-gray-200 text-black p-6 rounded shadow-md transition-transform hover:bouncy-hover" @click="playSound(8)">Sound 8</button>
-        <button class="bg-gray-200 text-black p-6 rounded shadow-md transition-transform hover:bouncy-hover" @click="playSound(9)">Sound 9</button>
+        <button class="bg-gray-200 text-black rounded shadow-md transition-transform hover:bouncy-hover" @click="playSound(1)">Dolphin (Test)</button>
+        <button class="bg-gray-200 text-black rounded shadow-md transition-transform hover:bouncy-hover" @click="playSound(2)">Sound 2</button>
+        <button class="bg-gray-200 text-black rounded shadow-md transition-transform hover:bouncy-hover" @click="playSound(3)">Sound 3</button>
+        <button class="bg-gray-200 text-black rounded shadow-md transition-transform hover:bouncy-hover" @click="playSound(4)">Sound 4</button>
+        <button class="bg-gray-200 text-black rounded shadow-md transition-transform hover:bouncy-hover" @click="playSound(5)">Sound 5</button>
+        <button class="bg-gray-200 text-black rounded shadow-md transition-transform hover:bouncy-hover" @click="playSound(6)">Sound 6</button>
+        <button class="bg-gray-200 text-black rounded shadow-md transition-transform hover:bouncy-hover" @click="playSound(7)">Sound 7</button>
+        <button class="bg-gray-200 text-black rounded shadow-md transition-transform hover:bouncy-hover" @click="playSound(8)">Sound 8</button>
+        <button class="bg-gray-200 text-black rounded shadow-md transition-transform hover:bouncy-hover flex justify-center items-center" @click="playSound(9)"><p class="absolute text-7xl">🚨</p></button>
     </div>
 </template>
 
