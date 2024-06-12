@@ -6,7 +6,7 @@ import {spawn, ChildProcess} from 'child_process';
 
 // const __dirname = path.dirname(fileURLToPath(import.meta.url));
 let backendProcess: ChildProcess;
-function createWindow(route = '/', title, icon) { //creates electron windows
+function createWindow(route = '/', title: string, icon: any) { //creates electron windows
   let win = new BrowserWindow({
     width: 1420,
     height: 900,
