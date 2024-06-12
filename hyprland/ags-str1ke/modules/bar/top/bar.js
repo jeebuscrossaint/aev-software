@@ -18,8 +18,8 @@ function Left() {
 function Center() {
     const center = Box({
         children: [
-            BM.Notification(),
-            BM.Media(),
+            // BM.Notification(),
+            // BM.Media(),
         ],
     });
     return center;
@@ -31,7 +31,8 @@ function Right() {
         children: [
             // BM.VolumeInfo(),
             // BM.NetworkInfo(),
-            BM.BatteryInfo(),
+            // BM.BatteryInfo(),
+            BM.Notification(),
             // BM.Separator(),
             // BM.SystemInfo(),
             // BM.Separator(),
