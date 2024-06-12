@@ -8,8 +8,5 @@
     "start": "cd frontend && npm run dev"
   },
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "socket.io": "^4.7.5"
-  }
+  "license": "ISC"
 }
