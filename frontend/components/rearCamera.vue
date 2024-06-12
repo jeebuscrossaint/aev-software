@@ -1,6 +1,7 @@
 <script setup>
 	import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
     	const socket = io('http://localhost:3000', {  reconnectionDelayMax: 10000,});
+	window.socket = socket;
 	function switch_workspace(id) {
 		socket.emit("switch workspace", id);
 	}
@@ -8,7 +9,7 @@
 </script>
 <template>
     <div>
-        <div @click="switch_workspace(2)" v-if="!videoDevice" class="w-full h-full border-4 rounded-lg border-gray-200 flex justify-center items-center text-7xl font-bold">No Camera Detected.</div>
+        <div @click="socket.emit('switch workspace', 2);" v-if="!videoDevice" class="w-full h-full border-4 rounded-lg border-gray-200 flex justify-center items-center text-7xl font-bold">No Camera Detected.</div>
         <div v-else class="w-full h-full">
         <video class="object-fill w-full h-full rounded-xl" ref="videoElement" autoplay></video>
         </div>
