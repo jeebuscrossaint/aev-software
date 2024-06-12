@@ -1,3 +1,5 @@
+
+
 <template>
     <div>
         <div v-if="!videoDevice" class="w-full h-full border-4 rounded-lg border-gray-200 flex justify-center items-center text-7xl font-bold">No Camera Detected.</div>
