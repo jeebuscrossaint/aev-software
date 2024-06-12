@@ -1,7 +1,8 @@
 .bar { 
-    margin: 8px;
-    border-radius: 12px;
-    background-color: $crust;
+    // margin: 8px;
+    // border-radius: 12px;
+    padding: 2px 8px;
+    background-color: $text;
 }
 
 .bar-launcher {
@@ -75,11 +76,11 @@
 //     margin: 0px 5px 0px 4px;
 // }
 .bnf-button {
-    background-color: $mantle;
+    background-color: $subtext0;
     border-radius: 8px;
     margin: 4px 4px;
     padding: 0px 4px;
-    border: 1.5px solid $base;
+    border: 1.5px solid $subtext0;
     font-size: 12px;
     &:hover {
         background-color: $surface0;
@@ -117,13 +118,13 @@
 }
 
 .bar-clock-button {
-    background-color: $mantle;
+    background-color: $subtext0;
     margin: 4px;
     padding: 0px 6px;
     font-size: 30px;
     color: $text;
     border-radius: 10px;
-    border: 1.5px solid $base;
+    border: 1.5px solid $subtext0;
     &:hover {
         background-color: $surface0;
     }
