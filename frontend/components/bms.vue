@@ -137,18 +137,18 @@
     <div v-if="JSON.stringify(error)!='{}'">
         <div class="flex justify-center items-center bg-[#F9FBFD] p-2">
             <!-- <img src="/alsetSideLogo.png" alt="" class="absolute top-5 w-[150px] sm:w-[200px] hidden sm:block"> -->
-            <div class="w-full h-full rounded-3xl flex flex-col items-center py-2 sm:py-10 gap-3">
+            <div class="w-full h-full rounded-3xl flex flex-col items-center py-2 sm:py-10 gap-2">
                 <h1 class="font-bold text-4xl sm:text-5xl bg-gradient-to-r from-blue-500 via-black to-red-500 inline-block text-transparent bg-clip-text">
                     BMS Error!
                 </h1>
 
-                <p class="text-lg sm:text-2xl min-w-[80%] text-left">
+                <p class="text-lg sm:text-xl min-w-[80%] text-left">
                     <br>
                     <strong>Error message:</strong> {{ JSON.stringify(error) }}
                     <br><br>
                 </p>
 
-                <p class="text-lg sm:text-xl min-w-[80%] text-left font-bold">Things to check</p>
+                <p class="text-lg sm:text-xl leading-tight min-w-[80%] text-left font-bold">Things to check</p>
                 <ul class="text-md sm:text-md min-w-[80%] max-w-[85%]">
                     <li>- Make sure the BMS is on & connected to the RPI.</li>
                     <li>- Make sure the 12v battery is charged, plugged in, & on.</li>
