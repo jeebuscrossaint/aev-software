@@ -7,54 +7,58 @@
 
 .bar-launcher {
     // background-color: red;
+    // border: 1.5px solid $base;
     button {
         padding: 6px;
         margin: 4px 0px 6px 10px;
         border-radius: 20px;
+        border: 1.5px solid $surface1;
+        background-color: $blue;
+        color: $text;
         // padding: 2px;
-        &:hover {
-            background-color: $base;
-        }
     }
 }
 
 .bar-workspaces {
     margin: 4px 12px 4px 0px;
-    background-color: $mantle;
-    padding: 0px 2px;
+    // background-color: $mantle;
+    padding: 0px 6px;
     border-radius: 8px;
-    border: 1.5px solid $base;
+    // border: 1.5px solid $base;
+
+
+    border: 1.5px solid $surface1;
 
     button {
         background-color: transparent;
         font-size: 32px;
         font-weight: bolder;
-        color: $overlay1;
+        color: $surface0;
         margin: 0px 1px;
         border-radius: 10px;
         padding: 0px 4px;
         transition: padding 0.2s cubic-bezier(0.12, 0, 0.39, 0);
 
         &:hover {
-            background-color: $surface0;
+            // background-color: $surface0;
         }
 
         &.bw-unoccupied {
-            color: $overlay1;
-            padding: 0px 12px;
+            // color: $overlay1;
+            // padding: 0px 12px;
         }
         &.bw-occupied {
-            color: $lavender;
-            padding: 0px 12px;
+            // color: $lavender;
+            // padding: 0px 12px;
         }
         &.bw-focused {
-            color: $mauve;
             font-weight: bolder;
             // background-color: $surface0;
-            border: 1.5px solid $mauve;
+            // border: 1.5px solid $mauve;
+            color: $base;
             border-radius: 5px;
             // margin: 0px 54px;
-            padding: 0px 20px;
+            // padding: 0px 20px;
         }
     }
 }
@@ -63,11 +67,17 @@
     margin: 4px;
     border-radius: 10px;
     padding: 0px 6px;
-    color: $text;
-    background-color: $mantle;
-    border: 1.5px solid $base;
-    font-size: 16px;
+    // color: $text;
+    // background-color: $mantle;
+    // border: 1.5px solid $base;
+    font-size: 22px;
     font-weight: bolder;
+
+    border: 1.5px solid $surface1;
+    background-color: $surface2;
+    color: $text;
+    
+    
 }
 
 // .bar-notification {
@@ -76,15 +86,13 @@
 //     margin: 0px 5px 0px 4px;
 // }
 .bnf-button {
-    background-color: $subtext0;
     border-radius: 8px;
     margin: 4px 4px;
     padding: 0px 4px;
-    border: 1.5px solid $subtext0;
     font-size: 12px;
-    &:hover {
-        background-color: $surface0;
-    }
+    border: 1.5px solid $surface1;
+    background-color: $surface2;
+    color: $text;
 }
 .bnf-label {
     margin: 0px 4px;
@@ -118,16 +126,13 @@
 }
 
 .bar-clock-button {
-    background-color: $subtext0;
+    border: 1.5px solid $surface1;
+    background-color: $surface2;
+    color: $text;
+    border-radius: 10px;
     margin: 4px;
     padding: 0px 6px;
     font-size: 30px;
-    color: $text;
-    border-radius: 10px;
-    border: 1.5px solid $subtext0;
-    &:hover {
-        background-color: $surface0;
-    }
 }
 
 progress, highlight {
@@ -139,8 +144,9 @@ progress, highlight {
 .bar-systray {
     margin: 4px 5px;
     padding: 0px 4px;
-    background-color: $mantle;
-    border: 1.5px solid $base;
+    border: 1.5px solid $surface1;
+    background-color: $surface2;
+    color: $text;
     border-radius: 10px;
     button {
         margin: 0px;
@@ -243,8 +249,10 @@ progress, highlight {
 
 .bar-powermenu {
     color: $red;
-    font-size: 18px;
+    font-size: 28px;
     margin: 0px 16px 0px 8px;
+    font-weight: bolder;
+    
 }
 
 // .bar-system {
