@@ -5,6 +5,10 @@
 # Waybar
 # ~/.config/waybar/launch.sh &
 
+# Pipewire (if you are mad at this, cope)
+pipewire-pulse &
+pipewire-media-session &
+
 # Eww
 # ~/.config/eww/launch.sh start --WM hyprland
 # eww open bar0 --config ~/.dotfiles/bootstrap/os/linux/config/eww/hyprland/
