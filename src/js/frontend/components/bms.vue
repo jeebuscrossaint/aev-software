@@ -95,40 +95,40 @@
 
     // Testing Graphs & Values -- COMMENT THIS OUT WHEN PLUGGING IN BMS
     onMounted(() => {
-        function rand(min, max) {
-            return Math.random() * (max - min) + min;
-        }
-        data.value = {
-            "voltage":"91.84v",
-            "cells":"30(notlocked)",
-            "mean":"3.062v",
-            "stddev":"0.037v",
-            "alerts":"notlocked",
-            "current":"-5.2A",
-            "SOC":"4%",
-            "uptime":["0","34","26"]
-        }
-        let battIteration = 0;
-        setInterval(async () => {
-            // Voltage
-            let randVolt = rand(75, 90);
-            data.value.voltage = Math.round(randVolt * 100) / 100;
-            updateVoltage(randVolt, randVolt/30);
-            // Current
-            let randCurr = rand(-8, 10);
-            data.value.current = Math.round(randCurr * 100) / 100;
-            updateCurrent(randCurr);
-            // Battery
-            let battCycl = [100, 74, 40, 26, 10, 4];
-            data.value.SOC = battCycl[battIteration];
-            updateBattery(battCycl[battIteration]);
-            battIteration++;
-            if(battIteration == 6){
-                battIteration = 0;
-            }
-            // Reload Graphs
-            reloaded.value = !(reloaded.value)
-        }, 550);
+        // function rand(min, max) {
+        //     return Math.random() * (max - min) + min;
+        // }
+        // data.value = {
+        //     "voltage":"91.84v",
+        //     "cells":"30(notlocked)",
+        //     "mean":"3.062v",
+        //     "stddev":"0.037v",
+        //     "alerts":"notlocked",
+        //     "current":"-5.2A",
+        //     "SOC":"4%",
+        //     "uptime":["0","34","26"]
+        // }
+        // let battIteration = 0;
+        // setInterval(async () => {
+        //     // Voltage
+        //     let randVolt = rand(75, 90);
+        //     data.value.voltage = Math.round(randVolt * 100) / 100;
+        //     updateVoltage(randVolt, randVolt/30);
+        //     // Current
+        //     let randCurr = rand(-8, 10);
+        //     data.value.current = Math.round(randCurr * 100) / 100;
+        //     updateCurrent(randCurr);
+        //     // Battery
+        //     let battCycl = [100, 74, 40, 26, 10, 4];
+        //     data.value.SOC = battCycl[battIteration];
+        //     updateBattery(battCycl[battIteration]);
+        //     battIteration++;
+        //     if(battIteration == 6){
+        //         battIteration = 0;
+        //     }
+        //     // Reload Graphs
+        //     reloaded.value = !(reloaded.value)
+        // }, 550);
     });
 </script>
 

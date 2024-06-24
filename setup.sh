@@ -4,8 +4,8 @@
 # Requirements: node, npm, git, tmux, gpsd
 
 # Clone the repository
-echo "Cloning the repository..."
-git clone https://github.com/jeebuscrossaint/aev-software ~/aev-software
+# echo "Cloning the repository..."
+# git clone https://github.com/jeebuscrossaint/aev-software ~/aev-software
 
 # Symlink Hyprland and AGS configuration
 echo "Symlinking Hyprland and AGS configuration..."
