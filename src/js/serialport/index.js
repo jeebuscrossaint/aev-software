@@ -10,34 +10,64 @@ function BmsData(data) {
     // Trim the first two elements of the array and the last element of the array (useless bc first is "\r" and last is "mcu> ")
     data.shift();
     data.shift();
-    data.pop(); 
+    data.pop();
+
+    console.log("RAW SERIAL PORT DATA: \n\n" + data.join("\n"));
 
     // Split each element by the colon and trim the whitespace from the beginning and end
     data = data.map((element) => {
         return element.split(':').map((item) => {
             return item.trim();
         });
+        
     });
-
+    
+    
     // Remove all instances of \r from the array
     data = data.map((element) => {
         return element.map((item) => {
             return item.replace(/\r/g, '');
         });
     });
-
+    
     // Trim spaces in all of the keys
     data = data.map((element) => {
         return element.map((item) => {
             return item.replace(/\s/g, '');
         });
     });
-
+    
+    // console.log(data)
+    
+    // Alerts
+    let alerts = [];
+    let alertStartIndex = data.findIndex((element) => {
+        return element[0] === "alerts";
+    });
+    let alertEndIndex = data.findIndex((element) => {
+        return element[0] === "current";
+    });
+    // alertEndIndex -= 1;
+    // console.log(alertStartIndex, alertEndIndex);
+    for (let i = alertStartIndex; i < alertEndIndex; i++) {
+        if (data[i][1] !== "") {
+            alerts.push(data[i][1]);
+            data
+        }
+    }
+    // console.log(alerts);
+    
+    
+    
     const dataObj = {};
     for (let item of data) {
-        dataObj[item[0]] = item[1];
+        if (item[0] !== "") {
+            dataObj[item[0]] = item[1];
+        }
     }
-
+    
+    dataObj.alerts = alerts;
+    
     // Trim all non-numbers from dataObj.uptime
     let oldUptime = dataObj.uptime.split("");
     let newUptime = [];
@@ -51,7 +81,21 @@ function BmsData(data) {
         }
     }               
     dataObj.uptime = newUptime.join("").split(",");
-
+    
+    // Trim all non-numbers from dataObj.cells
+    let cellsRaw = dataObj.cells.split("");
+    let cells = [];
+    for (let i = 0; i < cellsRaw.length; i++) {
+        if (!isNaN(cellsRaw[i])) {
+            cells.push(cellsRaw[i]);
+        }
+    }
+    dataObj.cells = cells.join("");
+    // console.log(dataObj.cells);
+    
+    console.log("\n\n");
+    console.log("PARSED SERIAL PORT DATA: \n\n" + JSON.stringify(dataObj, null, 4));
+    
     return dataObj;
 }
 
@@ -61,7 +105,8 @@ function writeData(data) { // used to write commands to serialport
     }
     port.write(data, function(err) {
         if (err) {
-            return console.log('Error on write: ', err.message)
+            return new Error('Error on write: ', err.message)
+            // console.log('Error on write: ', err.message)
         }
         console.log('message written')
     });
@@ -116,6 +161,7 @@ daemon.start(function() {
 
 
 parser.on('data', (stream) => { //reads data
+    console.log("data recieved")
     let data = stream.toString().split('\n');
     let battery_data = BmsData(data);
     console.log(battery_data);
@@ -133,6 +179,15 @@ io.on('connection', (socket) => {
     if(!listener.isConnected()) {
         io.emit('error', 'GPSD is not connected');
     }
+
+    // Every 1 second, run writeData('sh\n') to get the latest data from the BMS
+    setInterval(() => {
+        if(!writeData('sh\n')) {
+            console.error('BMS is not responding')
+            io.emit('error', 'BMS is not responding');
+        }
+    }, 1000);
+
     socket.on('disconnect', () => {
         console.log('User disconnected');
         const index = connections.indexOf(socket);
@@ -156,8 +211,8 @@ console.log(tpv);
     });
 });
 
-httpServer.listen(3000, () => { //starts socketio server
-    console.log('Site is running on port 3000')
+httpServer.listen(3001, () => { //starts socketio server
+    console.log('Site is running on port 3001')
 });
 
 

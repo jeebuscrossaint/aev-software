@@ -46,7 +46,7 @@
 
     // done.
     // ty
-    const socket = io('http://localhost:3000', {  reconnectionDelayMax: 10000,});
+    const socket = io('http://localhost:3001', {  reconnectionDelayMax: 10000,});
     socket.on('gps data', (content) => {
         speed.value = content.speed
     });

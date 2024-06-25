@@ -25,19 +25,19 @@ function createWindow(route = '/', title: string, icon: any) { //creates electro
 
 
 app.whenReady().then(() => {
-const ls = spawn('node', ['../serialport/index.js']);
+// const ls = spawn('node', ['../serialport/index.js']);
 
-ls.stdout.on('data', (data) => {
-  console.log(`stdout: ${data}`);
-});
+// ls.stdout.on('data', (data) => {
+//   console.log(`stdout: ${data}`);
+// });
 
-ls.stderr.on('data', (data) => {
-  console.error(`stderr: ${data}`);
-});
+// ls.stderr.on('data', (data) => {
+//   console.error(`stderr: ${data}`);
+// });
 
-ls.on('close', (code) => {
-  console.log(`child process exited with code ${code}`);
-}); 
+// ls.on('close', (code) => {
+//   console.log(`child process exited with code ${code}`);
+// }); 
   createWindow('/', 'main', '../assets/dashboard.ico');
   createWindow('/cameras', 'cameras', '/cameras.ico');
 });

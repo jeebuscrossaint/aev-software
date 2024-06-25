@@ -75,7 +75,7 @@
     let error = ref({});
 
     // Stream to receive backend data & update graphs
-    const socket = io('http://localhost:3000', {  reconnectionDelayMax: 10000,});
+    const socket = io('http://localhost:3001', {  reconnectionDelayMax: 10000,});
     socket.on('bms data', (content) => {
         // Update All data
         data.value = content;
