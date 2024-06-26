@@ -67,7 +67,7 @@
         "cells":"0",
         "mean":"0v",
         "stddev":"0v",
-        "alerts":"none",
+        "alerts": ["Alert 1", "Alert 2"],
         "current":"0A",
         "SOC":"0%",
         "uptime":["00","00","00"]
@@ -182,7 +182,10 @@
                     <div class="flex flex-col gap-5">
                         <h1 class="text-3xl sm:text-5xl font-semibold">Battery</h1> 
                         <p class="sm:text-2xl">
-                            Alerts: {{ data.alerts }}<br>
+                            Alerts: <br>
+                            <ul>
+                                <li class="sm:text-xl" v-for="alert in data.alerts">&emsp; • {{ alert }}</li>
+                            </ul>
                             Cells: {{ data.cells }}<br>
                             Uptime: {{ data.uptime[0] }}:{{ data.uptime[1] }}:{{ data.uptime[2] }}
                         </p>

@@ -53,33 +53,34 @@
     socket.on('error', (content) => {
  
     });
-    onMounted(() => {
-        setInterval(() => {
-            // ALL THIS WILL BE UPDATED WITH SERIALPORT UPDATE THIS IS STATIC FOR NOW WITH INTERVAL TEST CASE
-            if(speed.value >= 40){
-                speed.value = 0;
-                if(speed.value == 0){
-                    speedToggle.value = 0;
-                    speedColor.value = getColorForSpeed(speed.value);
-                }
-                else{
-                    speedToggle.value = 20;
-                    speedColor.value = getColorForSpeed(speed.value);
-                }
-            }
-            else{
-                speed.value += 1;
-                if(speed.value == 0){
-                    speedToggle.value = 0;
-                    speedColor.value = getColorForSpeed(speed.value);
-                }
-                else{
-                    speedToggle.value = 20;
-                    speedColor.value = getColorForSpeed(speed.value);
-                }
-            }
-        }, 300);
-    });
+    // TEST DATA, COMMENT WHEN TESTING ACTUAL CAR
+    // onMounted(() => {
+    //     setInterval(() => {
+    //         // ALL THIS WILL BE UPDATED WITH SERIALPORT UPDATE THIS IS STATIC FOR NOW WITH INTERVAL TEST CASE
+    //         if(speed.value >= 40){
+    //             speed.value = 0;
+    //             if(speed.value == 0){
+    //                 speedToggle.value = 0;
+    //                 speedColor.value = getColorForSpeed(speed.value);
+    //             }
+    //             else{
+    //                 speedToggle.value = 20;
+    //                 speedColor.value = getColorForSpeed(speed.value);
+    //             }
+    //         }
+    //         else{
+    //             speed.value += 1;
+    //             if(speed.value == 0){
+    //                 speedToggle.value = 0;
+    //                 speedColor.value = getColorForSpeed(speed.value);
+    //             }
+    //             else{
+    //                 speedToggle.value = 20;
+    //                 speedColor.value = getColorForSpeed(speed.value);
+    //             }
+    //         }
+    //     }, 300);
+    // });
 </script>
 
 <template>
