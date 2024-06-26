@@ -7,6 +7,7 @@ import cors from 'cors';
 import {Daemon, Listener} from 'node-gpsd';
 import child_process from 'node:child_process';
 function BmsData(data) {
+    // console.log(data); process.exit();
     // Trim the first two elements of the array and the last element of the array (useless bc first is "\r" and last is "mcu> ")
     data.shift();
     data.shift();
@@ -67,6 +68,8 @@ function BmsData(data) {
     }
     
     dataObj.alerts = alerts;
+
+    console.log(dataObj);
     
     // Trim all non-numbers from dataObj.uptime
     let oldUptime = dataObj.uptime.split("");
@@ -163,9 +166,16 @@ daemon.start(function() {
 parser.on('data', (stream) => { //reads data
     console.log("data recieved")
     let data = stream.toString().split('\n');
-    let battery_data = BmsData(data);
-    console.log(battery_data);
-    io.emit('bms data', battery_data);
+
+    try {
+        let battery_data = BmsData(data);
+        console.log(battery_data);
+        io.emit('bms data', battery_data);
+    } catch (e) {
+        console.error(e);
+        io.emit('error', e);
+    }
+
 });
 port.on('error', (err) => {io.emit('error', err)});
 
@@ -186,7 +196,7 @@ io.on('connection', (socket) => {
             console.error('BMS is not responding')
             io.emit('error', 'BMS is not responding');
         }
-    }, 1000);
+    }, 500);
 
     socket.on('disconnect', () => {
         console.log('User disconnected');
