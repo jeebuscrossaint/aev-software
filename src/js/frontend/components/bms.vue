@@ -76,6 +76,7 @@
 
     // Stream to receive backend data & update graphs
     const socket = io('http://localhost:3001', {  reconnectionDelayMax: 10000,});
+    console.log('zach is gay')
     socket.on('bms data', (content) => {
         // Update All data
         data.value = content;
@@ -92,7 +93,7 @@
         console.error("SOCKET ERROR: " + content);
         error.value = content;
     });
-
+    socket.emit('write to bms');
     // Testing Graphs & Values -- COMMENT THIS OUT WHEN PLUGGING IN BMS
     onMounted(() => {
         // function rand(min, max) {

@@ -179,42 +179,23 @@ parser.on('data', (stream) => { //reads data
 });
 port.on('error', (err) => {io.emit('error', err)});
 
-io.on('connection', (socket) => {
-    console.log('New connection!');
-    connections.push(socket);
-    if(!connections.length === 1) {
-    if(!writeData('sh\n')) {
-        console.error('BMS is not connected')
-        io.emit('error', 'BMS is not connected');
-    }
-    if(!listener.isConnected()) {
-        io.emit('error', 'GPSD is not connected');
-    }
-
-    // Every 1 second, run writeData('sh\n') to get the latest data from the BMS
-    setInterval(() => {
+io.on('connection', (socket) => {    
+   socket.on('switch workspace', (workspace) => {
+      console.log('Going to cameras');
+      child_process.exec('hyprctl dispatch workspace '+workspace);
+   });
+	   console.log("device connected");
+ socket.on('write to bms', () => {
+      setInterval(() => {
         if(!writeData('sh\n')) {
             console.error('BMS is not responding')
             io.emit('error', 'BMS is not responding');
         }
     }, 500);
 
-    socket.on('disconnect', () => {
-        console.log('User disconnected');
-        const index = connections.indexOf(socket);
-        connections.splice(index, 1);
-    
-    });
-    
-   socket.on('switch workspace', (workspace) => {
-      console.log('Going to cameras');
-      child_process.exec('hyprctl dispatch workspace '+workspace);
-   });
-    }
-   else {
-	   console.log("already connected");
-   }
+}) 
 });
+
 
 
 listener.connect(() => {
