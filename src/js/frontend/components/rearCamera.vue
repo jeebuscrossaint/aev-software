@@ -1,9 +1,13 @@
 <script setup>
 	import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
-    	const socket = io('http://localhost:3001', {  reconnectionDelayMax: 10000,});
-	window.socket = socket;
+    const socket = io('http://localhost:3001', {  reconnectionDelayMax: 10000,});
+	import child_process from 'child_process';
+    window.socket = socket;
 	function switch_workspace(id) {
-		socket.emit("switch workspace", id);
+        
+		// socket.emit("switch workspace", id);
+        // child_process.exec(`wmctrl -s ${id}`);
+        child_process.exec(`hyprctl dispatch workspace ${id}`);
 	}
 	
 </script>
