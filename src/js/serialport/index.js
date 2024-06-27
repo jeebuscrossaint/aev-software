@@ -182,6 +182,7 @@ port.on('error', (err) => {io.emit('error', err)});
 io.on('connection', (socket) => {
     console.log('New connection!');
     connections.push(socket);
+    if(!connections.length === 1) {
     if(!writeData('sh\n')) {
         console.error('BMS is not connected')
         io.emit('error', 'BMS is not connected');
@@ -209,6 +210,10 @@ io.on('connection', (socket) => {
       console.log('Going to cameras');
       child_process.exec('hyprctl dispatch workspace '+workspace);
    });
+    }
+   else {
+	   console.log("already connected");
+   }
 });
 
 
