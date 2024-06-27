@@ -1,5 +1,6 @@
 // Packages
 import { SerialPort, DelimiterParser } from 'serialport';
+import {Daemon, Listener} from 'node-gpsd';
 import ws from 'ws';
 
 class AEVBackend {
@@ -25,6 +26,8 @@ class AEVBackend {
 			GPS: {
 				enabled: false,
 				daemon: null,
+				listener: null,
+				data: {speed: "0", lat: "0", lon: "0"}
 			},
 		};
 
@@ -43,7 +46,7 @@ class AEVBackend {
 
 	initPorts() {
 		// Initialize serial port for MCU
-		if (fs.existsSync('/dev/ttyUSB0')) {
+		if (fs.existsSync(this.config.MCU.path)) {
 			this.ports.MCU.enabled = true;
 			this.ports.MCU.port = new SerialPort({
 				path: this.config.MCU.path,
@@ -75,9 +78,46 @@ class AEVBackend {
 		} else {
 			this.logger.error("MCU serial port not found at " + this.config.MCU.path);
 		}
-
 		// Initialize serial port for GPS
-		// NOTE: Not yet implemented
+		if (fs.existsSync(this.config.GPS.path)) {
+			this.ports.GPS.enabled = true; // this should also depend on gpsd running
+			this.ports.GPS.daemon = new Daemon({
+				program: 'gpsd',
+				device: this.config.GPS.path,
+				port: 2947, // Default port for gpsd, usually shouldn't be changed
+				pid: '/tmp/gpsd.pid',
+				readOnly: false,
+				logger: {
+					info: function() {},
+					warn: console.warn,
+					error: console.error
+				}
+			});
+			
+			this.ports.GPS.listener = new Listener({ // i doubt we need both the listener and the daemon but thats what docs say so..
+				port: 2947,
+				hostname: 'localhost',
+				logger:  {
+					info: function() {},
+					warn: console.warn,
+					error: console.error
+				},
+				parse: true
+			});
+			this.ports.GPS.daemon.start(function() {
+				console.log("GPS daemon started");
+			});
+			this.ports.GPS.listener.connect(() => {
+				console.log('Connected to gpsd');
+				this.ports.GPS.listener.watch();
+			});
+			this.ports.GPS.listener.on('TPV', function(data) {
+				this.ports.GPS.data = data;
+			});
+
+		} else {
+			this.logger.error("GPS device not found at " + this.config.GPS.path);
+		}
 	}
 
 	initSocket() {
@@ -110,11 +150,12 @@ class AEVBackend {
 				}
 
 				ws.on('message', function incoming(message) {
-					if (message === "bms-data") {
+					if (message === "bms-data") {  
 						this.logger.log("Client requested BMS data, sending it over")
 						ws.send(JSON.stringify(this.ports.MCU.data));
 					} else if (message === "gps-data") {
-						// NOTE: Not yet implemented
+						// NOTE: Not yet implemented 
+
 					} else {
 						this.logger.warn("Unknown message received from client: " + message);
 					}
