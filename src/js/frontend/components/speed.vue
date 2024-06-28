@@ -52,9 +52,12 @@
         }, 500);
     });
 
-    ws.on("message", function message(data) {
-        console.log("BMS Data Recieved: " + data);
-        speed.value = data;
+    ws.on("message", function message(GPSData) {
+        console.log("GPS Data Recieved: " + data);
+        const split = GPSData.split("|");
+        if (split[0] === "gps-data") {
+            data.value = JSON.parse(split[1]);
+        }
     });
 
     // ws.addEventListener("message", (event) => {

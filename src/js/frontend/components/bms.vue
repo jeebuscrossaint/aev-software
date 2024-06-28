@@ -117,6 +117,11 @@
         updateBattery(Number((data.value.SOC).slice(0, -1)));
         // Reload Graphs
         reloaded.value = !(reloaded.value);
+        
+        const split = BMSdata.split("|");
+        if (split[0] === "bms-data") {
+            data.value = JSON.parse(split[1]);
+        }
     });
 
     // Testing Graphs & Values -- COMMENT THIS OUT WHEN PLUGGING IN BMS
