@@ -1,7 +1,8 @@
 // Packages
 import { SerialPort, DelimiterParser } from 'serialport';
 import {Daemon, Listener} from 'node-gpsd';
-import ws from 'ws';
+import { WebSocketServer } from 'ws';
+import fs from "fs";
 
 class AEVBackend {
 	constructor(config, logger) {
@@ -40,6 +41,7 @@ class AEVBackend {
 	}
 
 	start() {
+		this.logger.warn("Logger initialized in backend!");
 		this.initPorts();
 		this.initSocket();
 	}
@@ -47,36 +49,45 @@ class AEVBackend {
 	initPorts() {
 		// Initialize serial port for MCU
 		if (fs.existsSync(this.config.MCU.path)) {
+			
+			this.logger.success("MCU serial port is being opened...")
 			this.ports.MCU.enabled = true;
 			this.ports.MCU.port = new SerialPort({
 				path: this.config.MCU.path,
 				baudRate: this.config.MCU.baudRate,
+				autoOpen: false, 
 			});
 
 			this.ports.MCU.parser = this.ports.MCU.port.pipe(new DelimiterParser({
 				delimiter: 'sh',
 			}));
 
-			this.ports.MCU.port.on('open', function() {
+			// console.log(this.logger)
+			this.ports.MCU.port.on('open', () => {
+				// const logger = this.logger;
 				this.logger.success("MCU serial port opened");
 				this.continue.MCU = true;
 			});
-			this.ports.MCU.parser.on('data', function(data) {
-				this.parseBMSData(data);
+			this.ports.MCU.parser.on('data', (data) => {
+				this.parseBMSData(data.toString().split("\n"));
 			});
-			this.ports.MCU.port.on('error', function(error) {
-				this.logger.warn("MCU serial port error: " + error);
+			this.ports.MCU.port.on('error', (error) => {
+				// this.logger.warn(`MCU serial port error: ${error}`);
 			});
-			this.ports.MCU.port.on('close', function() {
+			this.ports.MCU.port.on('close', () => {
 				this.logger.warn("MCU serial port closed");
 				this.continue.MCU = false;
 			});
-			this.ports.MCU.port.on('drain', function() {
+			this.ports.MCU.port.on('drain', () => {
 				this.logger.success("MCU serial port drained (write failed)");
 			});
 
+			this.ports.MCU.port.open( (err) => {
+				if (err) console.error(err)
+			})
+
 		} else {
-			this.logger.error("MCU serial port not found at " + this.config.MCU.path);
+			this.logger.fail("MCU serial port not found at " + this.config.MCU.path);
 		}
 		// Initialize serial port for GPS
 		if (fs.existsSync(this.config.GPS.path)) {
@@ -116,19 +127,19 @@ class AEVBackend {
 			});
 
 		} else {
-			this.logger.error("GPS device not found at " + this.config.GPS.path);
+			this.logger.fail("GPS device not found at " + this.config.GPS.path);
 		}
 	}
 
 	initSocket() {
 		if (this.ports.MCU.enabled || this.ports.GPS.enabled) {
 			// Initialize WebSocket server
-			this.wss = new ws.Server({ 
+			this.wss = new WebSocketServer({ 
 				port: this.config.mainPort 
 			});
 
 
-			wss.on('connection', function connection(ws) {
+			this.wss.on('connection', (ws) => {
 				this.logger.success("Client connected to WebSocket server");
 				if (this.ports.MCU.enabled) {
 					if (this.ports.MCU.port.isOpen) {
@@ -136,33 +147,41 @@ class AEVBackend {
 						setInterval(() => {
 							try {
 								if (this.continue.MCU) {
-									this.logger.log("Sending BMS data to client")
-									ws.send(JSON.stringify(this.ports.MCU.data));
+									this.ports.MCU.port.write("sh\n");
+									// ws.send(JSON.stringify(this.ports.MCU.data));
+									this.logger.debug("Updated BMS Data")
 								} else {
 									this.logger.warn("Told not to continue sending BMS data through socket");
 								}
-								
 							} catch (error) {
-								this.logger.warn("Error sending BMS data to client: " + error);
+								this.logger.warn("Error updating BMS data: " + error);
 							}
 						}, 500);
 					}
 				}
 
-				ws.on('message', function incoming(message) {
+				ws.on('message', (message) => {
+					message = message.toString();
+					this.logger.debug("Received message from client: " + message);
 					if (message === "bms-data") {  
-						this.logger.log("Client requested BMS data, sending it over")
+						this.logger.success("Client requested BMS data, sending it over")
 						ws.send(JSON.stringify(this.ports.MCU.data));
 					} else if (message === "gps-data") {
 						// NOTE: Not yet implemented 
 
 					} else {
-						this.logger.warn("Unknown message received from client: " + message);
+						this.logger.warn("Unknown message received from client: " + `"${message}"`);
 					}
 				});
 			});
+
+			// this.wss.
 		}
 	}
+
+	// getData() {
+	// 	this.ports.MCU.port.write("sh\n");
+	// }
 
 	parseBMSData(data) {
 		// Parse BMS data
@@ -256,7 +275,9 @@ class AEVBackend {
 			// console.log(dataObj.cells);
 			
 			// console.log("\n\n");
-			this.logger.success("BMS Data: \n\n" + JSON.stringify(dataObj, null, 4));
+			// this.logger.success("BMS Data: \n\n" + JSON.stringify(dataObj, null, 4));
+
+			// this.logger.log(dataObj)
 
 			this.ports.MCU.data = dataObj;
 			return this.ports.MCU.data;

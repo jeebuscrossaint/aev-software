@@ -1,7 +1,7 @@
 let config = {
 	"MCU": {
 		"path": "/dev/ttyUSB0",
-		"baudRate": 112500
+		"baudRate": 115200
 	},
 	"GPS": {
 		"path": "/dev/ttyAMA0"

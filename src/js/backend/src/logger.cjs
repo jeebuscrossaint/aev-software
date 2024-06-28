@@ -1,6 +1,8 @@
 // Original logger code from RealStr1ke/Byte
 
-import colors from 'colors';
+const colors = require("colors");
+
+
 class Logger {
 
 	constructor() {
@@ -42,4 +44,4 @@ class Logger {
 	}
 }
 
-module.exports = CustomLog;
+module.exports = Logger;

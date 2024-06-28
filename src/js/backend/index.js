@@ -7,7 +7,7 @@ import config from "./src/config.js";
 
 // Custom classes
 import AEVBackend from "./src/backend.js";
-import Logger from "./src/logger.js";
+import Logger from "./src/logger.cjs";
 
 // Initialize the backend
 const logger = new Logger();
