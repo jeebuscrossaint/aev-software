@@ -28,7 +28,11 @@ class AEVBackend {
 				enabled: false,
 				daemon: null,
 				listener: null,
-				data: {speed: "0", lat: "0", lon: "0"}
+				data: {
+					speed: 0,
+					lon: 0,
+					lat: 0,
+				}
 			},
 		};
 
@@ -42,14 +46,14 @@ class AEVBackend {
 
 	start() {
 		this.logger.warn("Logger initialized in backend!");
-		this.initPorts();
+		this.initMCU();
+		this.initGPS();
 		this.initSocket();
 	}
 
-	initPorts() {
+	initMCU() {
 		// Initialize serial port for MCU
 		if (fs.existsSync(this.config.MCU.path)) {
-			
 			this.logger.success("MCU serial port is being opened...")
 			this.ports.MCU.enabled = true;
 			this.ports.MCU.port = new SerialPort({
@@ -89,6 +93,9 @@ class AEVBackend {
 		} else {
 			this.logger.fail("MCU serial port not found at " + this.config.MCU.path);
 		}
+	}
+
+	initGPS() {
 		// Initialize serial port for GPS
 		if (fs.existsSync(this.config.GPS.path)) {
 			this.ports.GPS.enabled = true; // this should also depend on gpsd running
@@ -115,15 +122,16 @@ class AEVBackend {
 				},
 				parse: true
 			});
-			this.ports.GPS.daemon.start(function() {
-				console.log("GPS daemon started");
+			this.ports.GPS.daemon.start(() => {
+				this.logger.success("GPS daemon started");
 			});
 			this.ports.GPS.listener.connect(() => {
-				console.log('Connected to gpsd');
+				this.logger.success('Connected to gpsd');
 				this.ports.GPS.listener.watch();
 			});
-			this.ports.GPS.listener.on('TPV', function(data) {
-				this.ports.GPS.data = data;
+			this.ports.GPS.listener.on('TPV', (data) => {
+				this.parseGPSData(data);
+				// console.log(this.ports.GPS.data)
 			});
 
 		} else {
@@ -167,8 +175,12 @@ class AEVBackend {
 						this.logger.success("Client requested BMS data, sending it over")
 						ws.send(JSON.stringify(this.ports.MCU.data));
 					} else if (message === "gps-data") {
-						// NOTE: Not yet implemented 
-
+						this.logger.success("Client requested GPS data, sending it over")
+						ws.send(JSON.stringify(this.ports.GPS.data));
+					} else if (message === "gps-restart") {
+						this.initGPS();
+					} else if (message === "bms-restart") {
+						this.initMCU();
 					} else {
 						this.logger.warn("Unknown message received from client: " + `"${message}"`);
 					}
@@ -178,10 +190,6 @@ class AEVBackend {
 			// this.wss.
 		}
 	}
-
-	// getData() {
-	// 	this.ports.MCU.port.write("sh\n");
-	// }
 
 	parseBMSData(data) {
 		// Parse BMS data
@@ -285,6 +293,20 @@ class AEVBackend {
 			this.logger.warn("Error parsing BMS data: " + error);
 			return this.ports.MCU.data;
 		}
+	}
+
+	parseGPSData(data) {
+		if (data.speed) {
+			this.ports.GPS.data.speed = data.speed;
+		}
+		if (data.lon) {
+			this.ports.GPS.data.lon = data.lon;
+		}
+		if (data.lat) {
+			this.ports.GPS.data.lat = data.lat;
+		}
+
+		return this.ports.GPS.data;
 	}
 }
 

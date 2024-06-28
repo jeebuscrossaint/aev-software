@@ -4,7 +4,7 @@ let config = {
 		"baudRate": 115200
 	},
 	"GPS": {
-		"path": "/dev/ttyAMA0"
+		"path": "/dev/ttyACM0"
 	},
 	"mainPort": 3001
 };
