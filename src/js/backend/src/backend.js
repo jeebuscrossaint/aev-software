@@ -178,9 +178,21 @@ class AEVBackend {
 						this.logger.success("Client requested GPS data, sending it over")
 						ws.send(JSON.stringify(this.ports.GPS.data));
 					} else if (message === "gps-restart") {
-						this.initGPS();
+						try {
+							this.initGPS();
+							ws.send("GPS restarted");
+							this.logger.success("GPS restarted");
+						} catch (error) {
+							this.logger.warn("Error restarting GPS: " + error);
+						}
 					} else if (message === "bms-restart") {
-						this.initMCU();
+						try {
+							this.initMCU();
+							ws.send("BMS restarted");
+							this.logger.success("BMS restarted");
+						} catch (error) {
+							this.logger.warn("Error restarting BMS: " + error);
+						}
 					} else {
 						this.logger.warn("Unknown message received from client: " + `"${message}"`);
 					}

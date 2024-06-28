@@ -6,10 +6,10 @@ const ws = new WebSocket("ws://localhost:3001");
 ws.on("error", console.error);
 
 ws.on("open", function open() {
-	setInterval(() => {
-		ws.send("gps-data");
-		logger.log("Requested GPS data from server")
-	}, 500);
+	// Prompt the user for input (take it on new line)
+	process.stdin.on("data", function(data) {
+		ws.send(data.toString().trim());
+	});
 });
 
 ws.on("message", function message(data) {
