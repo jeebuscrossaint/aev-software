@@ -139,6 +139,12 @@ class AEVBackend {
 		}
 	}
 
+	stopMCU() {
+		this.continue.MCU = false;
+		this.ports.MCU.port.close();
+		this.logger.warn("MCU serial port closed");
+	}
+
 	initSocket() {
 		if (this.ports.MCU.enabled || this.ports.GPS.enabled) {
 			// Initialize WebSocket server
@@ -189,6 +195,7 @@ class AEVBackend {
 						}
 					} else if (message === "bms-restart") {
 						try {
+							this.stopMCU();
 							this.initMCU();
 							reply = "BMS restarted";
 							this.logger.success("BMS restarted");
