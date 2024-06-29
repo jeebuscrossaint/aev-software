@@ -64,16 +64,12 @@
     // });
 
     const socket = io('http://localhost:3001', {  reconnectionDelayMax: 10000,});
-    socket.on('message', (content) => {
-        // Update All data
-        
+    socket.on('message', (content) => {        
         // Update All data
         const split = content.split("|");
         if (split[0] === "gps-data") {
-            data.value = (JSON.parse(split[1])).speed;
+            speed.value = (JSON.parse(split[1])).speed;
         }
-        // Reload Graphs
-        reloaded.value = !(reloaded.value);
     });
     socket.on('error', (content) => {
         console.error("SOCKET ERROR: " + content);
@@ -109,7 +105,7 @@
     //         }
     //     }, 300);
         setInterval(() => {
-            
+            socket.send("gps-data");
         }, 550);
     });
 </script>
