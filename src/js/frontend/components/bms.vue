@@ -1,6 +1,5 @@
 <script setup>
-    import WebSocket from "ws";
-    const ws = new WebSocket("ws://localhost:3001");
+    import { io } from "socket.io-client";
 
     import { Line } from 'vue-chartjs';
     import { Doughnut } from 'vue-chartjs'
@@ -78,37 +77,13 @@
 
     // Stream to receive backend data & update graphs
     // Old SocketIO Stuff
-    // const socket = io('http://localhost:3001', {  reconnectionDelayMax: 10000,});
-    // socket.on('bms data', (content) => {
-    //     // Update All data
-    //     data.value = content;
-    //     // Voltage
-    //     updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
-    //     // Current
-    //     updateCurrent(Number((data.value.current).slice(0, -1)));
-    //     // Battery
-    //     updateBattery(Number((data.value.SOC).slice(0, -1)));
-    //     // Reload Graphs
-    //     reloaded.value = !(reloaded.value);
-    // });
-    // socket.on('error', (content) => {
-    //     console.error("SOCKET ERROR: " + content);
-    //     error.value = content;
-    // });
-    // socket.emit('write to bms');
-
-    ws.on("error", console.error);
-
-    ws.on("open", function open() {
-        setInterval(() => {
-            ws.send("bms-data");
-        }, 500);
-    });
-
-    ws.on("message", function message(BMSdata) {
-        console.log("BMS Data Recieved: " + BMSdata);
-        data.value = BMSdata
-
+    const socket = io('http://localhost:3001', {  reconnectionDelayMax: 10000,});
+    socket.on('message', (content) => {
+        // Update All data
+        const split = content.split("|");
+        if (split[0] === "bms-data") {
+            data.value = JSON.parse(split[1]);
+        }
         // Voltage
         updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
         // Current
@@ -117,12 +92,38 @@
         updateBattery(Number((data.value.SOC).slice(0, -1)));
         // Reload Graphs
         reloaded.value = !(reloaded.value);
-        
-        const split = BMSdata.split("|");
-        if (split[0] === "bms-data") {
-            data.value = JSON.parse(split[1]);
-        }
     });
+    socket.on('error', (content) => {
+        console.error("SOCKET ERROR: " + content);
+        error.value = content;
+    });
+
+    // ws.on("error", console.error);
+
+    // ws.on("open", function open() {
+    //     setInterval(() => {
+    //         ws.send("bms-data");
+    //     }, 500);
+    // });
+
+    // ws.on("message", function message(BMSdata) {
+    //     console.log("BMS Data Recieved: " + BMSdata);
+    //     data.value = BMSdata
+
+    //     // Voltage
+    //     updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
+    //     // Current
+    //     updateCurrent(Number((data.value.current).slice(0, -1)));
+    //     // Battery
+    //     updateBattery(Number((data.value.SOC).slice(0, -1)));
+    //     // Reload Graphs
+    //     reloaded.value = !(reloaded.value);
+        
+    //     const split = BMSdata.split("|");
+    //     if (split[0] === "bms-data") {
+    //         data.value = JSON.parse(split[1]);
+    //     }
+    // });
 
     // Testing Graphs & Values -- COMMENT THIS OUT WHEN PLUGGING IN BMS
     onMounted(() => {
@@ -160,6 +161,10 @@
         //     // Reload Graphs
         //     reloaded.value = !(reloaded.value)
         // }, 550);
+
+        setInterval(() => {
+            socket.send("bms-data");
+        }, 500);
     });
 </script>
 

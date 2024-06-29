@@ -1,6 +1,5 @@
 <script setup>
-    import WebSocket from "ws";
-    const ws = new WebSocket("ws://localhost:3001");
+    import { io } from "socket.io-client";
     
     let speedToggle = ref(0);
     let speedColor = ref({
@@ -43,29 +42,47 @@
         return color;
     }
 
-    ws.on("error", console.error);
+    // ws.on("error", console.error);
 
-    ws.on("open", function open() {
-        setInterval(() => {
-            ws.send("gps-data");
-            console.log("Requested GPS data from server");
-        }, 500);
-    });
+    // ws.on("open", function open() {
+    //     setInterval(() => {
+    //         ws.send("gps-data");
+    //         console.log("Requested GPS data from server");
+    //     }, 500);
+    // });
 
-    ws.on("message", function message(GPSData) {
-        console.log("GPS Data Recieved: " + data);
-        const split = GPSData.split("|");
-        if (split[0] === "gps-data") {
-            data.value = JSON.parse(split[1]);
-        }
-    });
+    // ws.on("message", function message(GPSData) {
+    //     console.log("GPS Data Recieved: " + data);
+    //     const split = GPSData.split("|");
+    //     if (split[0] === "gps-data") {
+    //         data.value = JSON.parse(split[1]);
+    //     }
+    // });
 
     // ws.addEventListener("message", (event) => {
     //     console.log("Message from server ", event.data);
     // });
 
+    const socket = io('http://localhost:3001', {  reconnectionDelayMax: 10000,});
+    socket.on('message', (content) => {
+        // Update All data
+        
+        // Update All data
+        const split = content.split("|");
+        if (split[0] === "gps-data") {
+            data.value = (JSON.parse(split[1])).speed;
+        }
+        // Reload Graphs
+        reloaded.value = !(reloaded.value);
+    });
+    socket.on('error', (content) => {
+        console.error("SOCKET ERROR: " + content);
+        error.value = content;
+    });
+
+
     // TEST DATA, COMMENT WHEN TESTING ACTUAL CAR
-    // onMounted(() => {
+    onMounted(() => {
     //     setInterval(() => {
     //         // ALL THIS WILL BE UPDATED WITH SERIALPORT UPDATE THIS IS STATIC FOR NOW WITH INTERVAL TEST CASE
     //         if(speed.value >= 40){
@@ -91,7 +108,10 @@
     //             }
     //         }
     //     }, 300);
-    // });
+        setInterval(() => {
+            
+        }, 550);
+    });
 </script>
 
 <template>
