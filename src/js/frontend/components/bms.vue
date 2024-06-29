@@ -1,7 +1,5 @@
 <script setup>
     import WebSocket from "ws";
-    import Logger from "./src/logger.cjs";
-    const logger = new Logger();
     const ws = new WebSocket("ws://localhost:3001");
 
     import { Line } from 'vue-chartjs';
@@ -104,12 +102,10 @@
     ws.on("open", function open() {
         setInterval(() => {
             ws.send("bms-data");
-            logger.log("Requested BMS data from server");
         }, 500);
     });
 
     ws.on("message", function message(BMSdata) {
-        logger.log("Recieved " + BMSdata);
         console.log("BMS Data Recieved: " + BMSdata);
         data.value = BMSdata
     });

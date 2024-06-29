@@ -1,7 +1,5 @@
 <script setup>
     import WebSocket from "ws";
-    import Logger from "./src/logger.cjs";
-    const logger = new Logger();
     const ws = new WebSocket("ws://localhost:3001");
     
     let speedToggle = ref(0);
@@ -50,14 +48,13 @@
     ws.on("open", function open() {
         setInterval(() => {
             ws.send("gps-data");
-            logger.log("Requested GPS data from server");
+            console.log("Requested GPS data from server");
         }, 500);
     });
 
     ws.on("message", function message(data) {
-        logger.log("Recieved " + data);
         console.log("BMS Data Recieved: " + data);
-        speed.value = data
+        speed.value = data;
     });
 
     // ws.addEventListener("message", (event) => {
