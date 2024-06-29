@@ -12,7 +12,10 @@ class AEVBackend {
 			MCU: {
 				enabled: false,
 				port: null,
-				parser: null,
+				parsers: {
+					overall: null,
+					cells: null,
+				},
 				data: {
 					voltage: "0v",
 					cells: "0",
@@ -62,8 +65,11 @@ class AEVBackend {
 				autoOpen: false, 
 			});
 
-			this.ports.MCU.parser = this.ports.MCU.port.pipe(new DelimiterParser({
-				delimiter: 'sh',
+			this.ports.MCU.parser.overall = this.ports.MCU.port.pipe(new DelimiterParser({
+				delimiter: 'show',
+			}));
+			this.ports.MCU.parser.cells = this.ports.MCU.port.pipe(new DelimiterParser({
+				delimiter: 'sh cells',
 			}));
 
 			// console.log(this.logger)
@@ -72,9 +78,13 @@ class AEVBackend {
 				this.logger.success("MCU serial port opened");
 				this.continue.MCU = true;
 			});
-			this.ports.MCU.parser.on('data', (data) => {
+			this.ports.MCU.parser.overall.on('data', (data) => {
 				this.parseBMSData(data.toString().split("\n"));
 			});
+			this.ports.MCU.parser.cells.on('data', (data) => {
+				this.parseCellData(data.toString().split("\n"));
+			});
+			
 			this.ports.MCU.port.on('error', (error) => {
 				// this.logger.warn(`MCU serial port error: ${error}`);
 			});
@@ -161,7 +171,7 @@ class AEVBackend {
 						setInterval(() => {
 							try {
 								if (this.continue.MCU) {
-									this.ports.MCU.port.write("sh\n");
+									this.ports.MCU.port.write("show\n");
 									// ws.send(JSON.stringify(this.ports.MCU.data));
 									this.logger.debug("Updated BMS Data")
 								} else {
@@ -171,6 +181,20 @@ class AEVBackend {
 								this.logger.warn("Error updating BMS data: " + error);
 							}
 						}, 500);
+
+						// Get BMS cell data every 5 seconds
+						setInterval(() => {
+							try {
+								if (this.continue.MCU) {
+									this.ports.MCU.port.write("sh cells\n");
+									this.logger.debug("Updated BMS Cell Data")
+								} else {
+									this.logger.warn("Told not to continue sending BMS cell data through socket");
+								}
+							} catch (error) {
+								this.logger.warn("Error updating BMS cell data: " + error);
+							}
+						}, 5000);
 					}
 				}
 
@@ -213,6 +237,16 @@ class AEVBackend {
 
 			// this.wss.
 		}
+
+		this.wss.on('close', () => {
+			this.logger.warn("Client disconnected from WebSocket server");
+		});
+
+		this.wss.on('error', (error) => {
+			this.logger.warn("Error in WebSocket server: " + error);
+		});
+
+		this.logger.success("WebSocket server started on port " + this.config.mainPort);
 	}
 
 	parseBMSData(data) {
@@ -331,6 +365,58 @@ class AEVBackend {
 		}
 
 		return this.ports.GPS.data;
+	}
+
+	parseCellData(data) {
+		// Remove first element and last 2 elements in data array
+		data.shift();
+		data.pop();
+		data.pop();
+
+		// console.log(data);
+
+		let rawCells = [];
+
+		data.forEach((cellData) => {
+			let tmpCells = cellData.split(' c');
+
+			for (let currentCell of tmpCells) {
+				let cell = currentCell.split(' - ');
+				if (cell[0] && cell[1]) {
+					let cellNum = cell[0].trim();
+					let cellVoltage = cell[1].trim();
+		
+					rawCells.push({
+						num: cellNum,
+						voltage: cellVoltage
+					});
+				}
+			}
+		});
+
+		let cells = {};
+		rawCells.forEach((cell) => {
+			if (cell.voltage.includes("v")) {
+				let voltage = `${cell.voltage.split("v")[0]}v`
+				let alerts = cell.voltage.split("v")[1] ? cell.voltage.split("v")[1].trim() : null;
+				cells[cell.num] = {
+					voltage: voltage,
+					alerts: alerts
+				};
+			} else {
+				cells[cell.num] = {
+					voltage: null,
+					alerts: null
+				};
+			}
+		});
+
+
+
+		// console.log(JSON.stringify(cells, null, 2));
+		console.log(Object.keys(cells).forEach((key) => {
+			console.log(`${key}: ${cells[key].voltage}`);
+		}));
 	}
 }
 
