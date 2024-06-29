@@ -1,6 +1,7 @@
 <script setup>
     import { io } from "socket.io-client";
-    
+    // import { io } from "socket.io";
+
     let speedToggle = ref(0);
     let speedColor = ref({
         r: '249',
@@ -63,15 +64,16 @@
     //     console.log("Message from server ", event.data);
     // });
 
-    const socket = io('http://localhost:3001', {  reconnectionDelayMax: 10000,});
-    socket.on('message', (content) => {        
+    const socket = io('ws://localhost:3001', {  reconnectionDelayMax: 10000,});
+    socket.on('message', content => {        
         // Update All data
         const split = content.split("|");
         if (split[0] === "gps-data") {
             speed.value = (JSON.parse(split[1])).speed;
+            speedColor.value = getColorForSpeed(Number(speed.value));
         }
     });
-    socket.on('error', (content) => {
+    socket.on('error', content => {
         console.error("SOCKET ERROR: " + content);
         error.value = content;
     });
@@ -106,6 +108,7 @@
     //     }, 300);
         setInterval(() => {
             socket.send("gps-data");
+            // socket.emit("bms-data", "bms-data");
         }, 550);
     });
 </script>

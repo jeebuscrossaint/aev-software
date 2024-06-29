@@ -1,5 +1,6 @@
 <script setup>
     import { io } from "socket.io-client";
+    // import { io } from "socket.io";
 
     import { Line } from 'vue-chartjs';
     import { Doughnut } from 'vue-chartjs'
@@ -77,7 +78,7 @@
 
     // Stream to receive backend data & update graphs
     // Old SocketIO Stuff
-    const socket = io('http://localhost:3001', {  reconnectionDelayMax: 10000,});
+    const socket = io('ws://localhost:3001', {  reconnectionDelayMax: 10000,});
     socket.on('message', (content) => {
         // Update All data
         const split = content.split("|");
@@ -164,6 +165,7 @@
 
         setInterval(() => {
             socket.send("bms-data");
+            // socket.emit("bms-data", "bms-data");
         }, 500);
     });
 </script>
@@ -228,11 +230,12 @@
                     </div>
                     <!--Battery Gaugue-->
                     <div v-if="reloaded" class="w-[45%] h-full flex justify-center items-center">
-                        <h1 class="text-4xl sm:text-6xl font-bold absolute"><br>{{ data.SOC }}</h1>
+                        <!-- This calculates the SOC based on voltage BTW... (its being devided by 33 since 108-75 (max/min voltage) is 33) -->
+                        <h1 class="text-4xl sm:text-6xl font-bold absolute"><br>{{ Math.round((((Number((data.value.voltage).slice(0, -1)))-75)/33)*100) }}</h1> 
                         <Doughnut :data="battery" :options="batteryChart" class="w-full" />
                     </div>
                     <div v-if="!reloaded" class="w-[45%] h-full flex justify-center items-center">
-                        <h1 class="text-4xl sm:text-6xl font-bold absolute"><br>{{ data.SOC }}</h1>
+                        <h1 class="text-4xl sm:text-6xl font-bold absolute"><br>{{ Math.round((((Number((data.value.voltage).slice(0, -1)))-75)/33)*100) }}</h1>
                         <Doughnut :data="battery" :options="batteryChart" class="w-full" />
                     </div>
                 </section>
