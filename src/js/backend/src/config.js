@@ -1,5 +1,5 @@
 let config = {
-	"MCU": {
+	"BMS": {
 		"path": "/dev/ttyUSB0",
 		"baudRate": 115200
 	},
