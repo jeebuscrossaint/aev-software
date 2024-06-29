@@ -170,17 +170,19 @@ class AEVBackend {
 
 				ws.on('message', (message) => {
 					message = message.toString();
+					let prefix = message;
+					let reply;
 					this.logger.debug("Received message from client: " + message);
 					if (message === "bms-data") {  
 						this.logger.success("Client requested BMS data, sending it over")
-						ws.send(JSON.stringify(this.ports.MCU.data));
+						reply = JSON.stringify(this.ports.MCU.data);
 					} else if (message === "gps-data") {
 						this.logger.success("Client requested GPS data, sending it over")
-						ws.send(JSON.stringify(this.ports.GPS.data));
+						reply = JSON.stringify(this.ports.GPS.data);
 					} else if (message === "gps-restart") {
 						try {
 							this.initGPS();
-							ws.send("GPS restarted");
+							reply = "GPS restarted";
 							this.logger.success("GPS restarted");
 						} catch (error) {
 							this.logger.warn("Error restarting GPS: " + error);
@@ -188,14 +190,17 @@ class AEVBackend {
 					} else if (message === "bms-restart") {
 						try {
 							this.initMCU();
-							ws.send("BMS restarted");
+							reply = "BMS restarted";
 							this.logger.success("BMS restarted");
 						} catch (error) {
 							this.logger.warn("Error restarting BMS: " + error);
 						}
 					} else {
+						reply = "Unknown message"
 						this.logger.warn("Unknown message received from client: " + `"${message}"`);
 					}
+
+					ws.send(`${prefix}|${reply}`);
 				});
 			});
 
