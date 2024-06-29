@@ -89,7 +89,7 @@
     //     // Battery
     //     updateBattery(Number((data.value.SOC).slice(0, -1)));
     //     // Reload Graphs
-    //     reloaded.value = !(reloaded.value)
+    //     reloaded.value = !(reloaded.value);
     // });
     // socket.on('error', (content) => {
     //     console.error("SOCKET ERROR: " + content);
@@ -108,6 +108,15 @@
     ws.on("message", function message(BMSdata) {
         console.log("BMS Data Recieved: " + BMSdata);
         data.value = BMSdata
+
+        // Voltage
+        updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
+        // Current
+        updateCurrent(Number((data.value.current).slice(0, -1)));
+        // Battery
+        updateBattery(Number((data.value.SOC).slice(0, -1)));
+        // Reload Graphs
+        reloaded.value = !(reloaded.value);
     });
 
     // Testing Graphs & Values -- COMMENT THIS OUT WHEN PLUGGING IN BMS
