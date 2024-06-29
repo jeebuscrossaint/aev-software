@@ -231,11 +231,11 @@
                     <!--Battery Gaugue-->
                     <div v-if="reloaded" class="w-[45%] h-full flex justify-center items-center">
                         <!-- This calculates the SOC based on voltage BTW... (its being devided by 33 since 108-75 (max/min voltage) is 33) -->
-                        <h1 class="text-4xl sm:text-6xl font-bold absolute"><br>{{ Math.round((((Number((data.value.voltage).slice(0, -1)))-75)/33)*100) }}</h1> 
+                        <h1 class="text-4xl sm:text-6xl font-bold absolute"><br>{{ data.SOC }}</h1> 
                         <Doughnut :data="battery" :options="batteryChart" class="w-full" />
                     </div>
                     <div v-if="!reloaded" class="w-[45%] h-full flex justify-center items-center">
-                        <h1 class="text-4xl sm:text-6xl font-bold absolute"><br>{{ Math.round((((Number((data.value.voltage).slice(0, -1)))-75)/33)*100) }}</h1>
+                        <h1 class="text-4xl sm:text-6xl font-bold absolute"><br>{{ data.SOC }}</h1>
                         <Doughnut :data="battery" :options="batteryChart" class="w-full" />
                     </div>
                 </section>
