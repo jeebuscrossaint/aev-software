@@ -9,18 +9,16 @@ class AEVBackend {
 		this.logger = logger;
 		this.config = config;
 		this.ports = {
-			BMS: {
+			MCU: {
 				enabled: false,
 				port: null,
-				parser: {
-					main: null,
+				parsers: {
 					overall: null,
 					cells: null,
 				},
 				data: {
 					voltage: "0v",
 					cells: "0",
-					cellList: {},
 					mean: "0v",
 					stddev: "0v",
 					alerts: [],
@@ -42,7 +40,7 @@ class AEVBackend {
 		};
 
 		this.continue = {
-			BMS: true,
+			MCU: true,
 			GPS: true,
 		}
 
@@ -51,92 +49,59 @@ class AEVBackend {
 
 	start() {
 		this.logger.warn("Logger initialized in backend!");
-		this.initBMS();
+		this.initMCU();
 		this.initGPS();
 		this.initSocket();
 	}
 
-	initBMS() {
-		// Initialize serial port for BMS
-		if (fs.existsSync(this.config.BMS.path)) {
-			this.logger.success("BMS serial port is being opened...")
-			this.ports.BMS.enabled = true;
-			this.ports.BMS.port = new SerialPort({
-				path: this.config.BMS.path,
-				baudRate: this.config.BMS.baudRate,
+	initMCU() {
+		// Initialize serial port for MCU
+		if (fs.existsSync(this.config.MCU.path)) {
+			this.logger.success("MCU serial port is being opened...")
+			this.ports.MCU.enabled = true;
+			this.ports.MCU.port = new SerialPort({
+				path: this.config.MCU.path,
+				baudRate: this.config.MCU.baudRate,
 				autoOpen: false, 
 			});
 
-			this.ports.BMS.parser.main = this.ports.BMS.port.pipe(new DelimiterParser({
-				delimiter: 'mcu> split',
+			this.ports.MCU.parser.overall = this.ports.MCU.port.pipe(new DelimiterParser({
+				delimiter: 'show',
+			}));
+			this.ports.MCU.parser.cells = this.ports.MCU.port.pipe(new DelimiterParser({
+				delimiter: 'sh cells',
 			}));
 
-			// this.ports.BMS.parser.overall = this.ports.BMS.port.pipe(new DelimiterParser({
-			// 	delimiter: 'show',
-			// }));
-			// this.ports.BMS.parser.cells = this.ports.BMS.port.pipe(new DelimiterParser({
-			// 	delimiter: 'sh cells',
-			// }));
-
 			// console.log(this.logger)
-			this.ports.BMS.port.on('open', () => {
+			this.ports.MCU.port.on('open', () => {
 				// const logger = this.logger;
-				this.logger.success("BMS serial port opened");
-				this.continue.BMS = true;
+				this.logger.success("MCU serial port opened");
+				this.continue.MCU = true;
 			});
-			// this.ports.BMS.parser.overall.on('data', (data) => {
-			// 	this.parseBMSData(data.toString().split("\n"));
-			// });
-			// this.ports.BMS.parser.cells.on('data', (data) => {
-			// 	this.parseCellData(data.toString().split("\n"));
-			// });
-
-			this.ports.BMS.parser.main.on("data", (data) => {
-				// let rawData = data;
-				// // console.log(data.toString().split("\n"));
-				// rawData = rawData.toString().split("show cells");
-				// console.log(rawData)
-
-
-				// const overall = rawData[0].split("\n");
-				// const cells = rawData[1].split("\n");
-
-				// console.log(data.toString());
-				const rawData = data;
-				// console.log(data.toString().split("\n"));
-				console.log("RAW DATA\n\n" + data.toString().split("\n"));
-				const parsedData = rawData.toString().split("sh\r")[1].split("mcu>");
-				const overall = parsedData[0].split("\n");
-				const cells = parsedData[1].split("\n");
-				console.log("PARSED DATA\n\n" + parsedData);
-				// console.log(parsedData)
-				// console.log(overall);
-				// console.log("\n");
-				// console.log(cells);
-
-				this.parseBMSData(overall);
-				this.parseCellData(cells);
-
-				this.logger.debug("Updated full BMS data");
-			})
+			this.ports.MCU.parser.overall.on('data', (data) => {
+				this.parseBMSData(data.toString().split("\n"));
+			});
+			this.ports.MCU.parser.cells.on('data', (data) => {
+				this.parseCellData(data.toString().split("\n"));
+			});
 			
-			this.ports.BMS.port.on('error', (error) => {
-				// this.logger.warn(`BMS serial port error: ${error}`);
+			this.ports.MCU.port.on('error', (error) => {
+				// this.logger.warn(`MCU serial port error: ${error}`);
 			});
-			this.ports.BMS.port.on('close', () => {
-				this.logger.warn("BMS serial port closed");
-				this.continue.BMS = false;
+			this.ports.MCU.port.on('close', () => {
+				this.logger.warn("MCU serial port closed");
+				this.continue.MCU = false;
 			});
-			this.ports.BMS.port.on('drain', () => {
-				this.logger.success("BMS serial port drained (write failed)");
+			this.ports.MCU.port.on('drain', () => {
+				this.logger.success("MCU serial port drained (write failed)");
 			});
 
-			this.ports.BMS.port.open( (err) => {
+			this.ports.MCU.port.open( (err) => {
 				if (err) console.error(err)
 			})
 
 		} else {
-			this.logger.fail("BMS serial port not found at " + this.config.BMS.path);
+			this.logger.fail("MCU serial port not found at " + this.config.MCU.path);
 		}
 	}
 
@@ -184,14 +149,14 @@ class AEVBackend {
 		}
 	}
 
-	stopBMS() {
-		this.continue.BMS = false;
-		this.ports.BMS.port.close();
-		this.logger.warn("BMS serial port closed");
+	stopMCU() {
+		this.continue.MCU = false;
+		this.ports.MCU.port.close();
+		this.logger.warn("MCU serial port closed");
 	}
 
 	initSocket() {
-		if (this.ports.BMS.enabled || this.ports.GPS.enabled) {
+		if (this.ports.MCU.enabled || this.ports.GPS.enabled) {
 			// Initialize WebSocket server
 			this.wss = new WebSocketServer({ 
 				port: this.config.mainPort 
@@ -200,81 +165,36 @@ class AEVBackend {
 
 			this.wss.on('connection', (ws) => {
 				this.logger.success("Client connected to WebSocket server");
-				if (this.ports.BMS.enabled) { 
-					if (this.ports.BMS.port.isOpen) {
-
-						this.ports.BMS.parser.debug = this.ports.BMS.port.pipe(new DelimiterParser({
-							delimiter: "\n"
-						}));
-						this.ports.BMS.parser.debug.on("data", (data) => {
-							console.log(data.toString());
-						})
-
+				if (this.ports.MCU.enabled) {
+					if (this.ports.MCU.port.isOpen) {
 						// Send BMS data to client half a second under a try-catch block
 						setInterval(() => {
 							try {
-								if (this.continue.BMS) {
-									// this.ports.BMS.port.write("show\n");
-									// ws.send(JSON.stringify(this.ports.BMS.data));
-									// this.logger.debug("Updated BMS Data")
-									// this.ports.BMS.port.write("show cells\n");
-									// this.ports.BMS.port.write("split\n");
-
-									setTimeout(() => {
-										try {
-											this.ports.BMS.port.write("\nsh\n");
-											this.ports.BMS.port.drain();
-										} catch (error) {
-											console.log(error)
-										}
-										// this.ports.BMS.port.write("\nsh\n");
-										// this.logger.log("Wrote show to MCU");
-									}, 250);
-								
-									setTimeout(() => {
-										try {
-											this.ports.BMS.port.write("sh cells\n");
-											this.ports.BMS.port.drain();
-										} catch (error) {
-											console.log(error)
-										}
-										// this.ports.BMS.port.write("sh cells\n");
-										// this.logger.log("Wrote show cells to MCU");
-									}, 500);
-								
-									setTimeout(() => {
-										try {
-											this.ports.BMS.port.write("split\n\n");
-											this.ports.BMS.port.drain();
-										} catch (error) {
-											console.log(error)
-										}
-										// this.ports.BMS.port.write("split\n\n");
-										// this.logger.log("Wrote split to MCU");
-									}, 750);
-									this.logger.debug("Wrote all commands, waiting for data response");
+								if (this.continue.MCU) {
+									this.ports.MCU.port.write("show\n");
+									// ws.send(JSON.stringify(this.ports.MCU.data));
+									this.logger.debug("Updated BMS Data")
 								} else {
 									this.logger.warn("Told not to continue sending BMS data through socket");
 								}
 							} catch (error) {
-								this.logger.warn("Error updating BMS data: " + error.toString());
-								console.error(error);
+								this.logger.warn("Error updating BMS data: " + error);
 							}
-						}, 1000);
+						}, 500);
 
 						// Get BMS cell data every 5 seconds
-						// setInterval(() => {
-						// 	try {
-						// 		if (this.continue.BMS) {
-						// 			this.ports.BMS.port.write("sh cells\n");
-						// 			this.logger.debug("Updated BMS Cell Data")
-						// 		} else {
-						// 			this.logger.warn("Told not to continue sending BMS cell data through socket");
-						// 		}
-						// 	} catch (error) {
-						// 		this.logger.warn("Error updating BMS cell data: " + error);
-						// 	}
-						// }, 5000);
+						setInterval(() => {
+							try {
+								if (this.continue.MCU) {
+									this.ports.MCU.port.write("sh cells\n");
+									this.logger.debug("Updated BMS Cell Data")
+								} else {
+									this.logger.warn("Told not to continue sending BMS cell data through socket");
+								}
+							} catch (error) {
+								this.logger.warn("Error updating BMS cell data: " + error);
+							}
+						}, 5000);
 					}
 				}
 
@@ -285,10 +205,7 @@ class AEVBackend {
 					this.logger.debug("Received message from client: " + message);
 					if (message === "bms-data") {  
 						this.logger.success("Client requested BMS data, sending it over")
-						reply = JSON.stringify(this.ports.BMS.data);
-					// } else if (message === "cell-data") {
-					// 	this.logger.success("Client requested cell data, sending it over")
-					// 	reply = JSON.stringify(this.ports.BMS.data.cellList);
+						reply = JSON.stringify(this.ports.MCU.data);
 					} else if (message === "gps-data") {
 						this.logger.success("Client requested GPS data, sending it over")
 						reply = JSON.stringify(this.ports.GPS.data);
@@ -302,8 +219,8 @@ class AEVBackend {
 						}
 					} else if (message === "bms-restart") {
 						try {
-							this.stopBMS();
-							this.initBMS();
+							this.stopMCU();
+							this.initMCU();
 							reply = "BMS restarted";
 							this.logger.success("BMS restarted");
 						} catch (error) {
@@ -335,7 +252,7 @@ class AEVBackend {
 	parseBMSData(data) {
 		// Parse BMS data
 		try {
-			// Trim the first two elements of the array and the last element of the array (useless bc first is "\r" and last is "BMS> ")
+			// Trim the first two elements of the array and the last element of the array (useless bc first is "\r" and last is "mcu> ")
 			data.shift();
 			data.shift();
 			data.pop();
@@ -428,11 +345,11 @@ class AEVBackend {
 
 			// this.logger.log(dataObj)
 
-			this.ports.BMS.data = dataObj;
-			return this.ports.BMS.data;
+			this.ports.MCU.data = dataObj;
+			return this.ports.MCU.data;
 		} catch (error) {
 			this.logger.warn("Error parsing BMS data: " + error);
-			return this.ports.BMS.data;
+			return this.ports.MCU.data;
 		}
 	}
 
@@ -451,8 +368,9 @@ class AEVBackend {
 	}
 
 	parseCellData(data) {
-		// Remove first element and last elements in data array
+		// Remove first element and last 2 elements in data array
 		data.shift();
+		data.pop();
 		data.pop();
 
 		// console.log(data);
@@ -496,11 +414,9 @@ class AEVBackend {
 
 
 		// console.log(JSON.stringify(cells, null, 2));
-		// console.log(Object.keys(cells).forEach((key) => {
-		// 	console.log(`${key}: ${cells[key].voltage}`);
-		// }));
-
-		this.ports.BMS.data.cellList = cells;
+		console.log(Object.keys(cells).forEach((key) => {
+			console.log(`${key}: ${cells[key].voltage}`);
+		}));
 	}
 }
 
