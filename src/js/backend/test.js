@@ -1,5 +1,5 @@
 import WebSocket from "ws";
-import Logger from "../logger.cjs";
+import Logger from "./src/logger.cjs";
 const logger = new Logger();
 const ws = new WebSocket("ws://localhost:3001");
 
