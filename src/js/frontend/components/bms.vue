@@ -1,5 +1,9 @@
 <script setup>
-    import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
+    import WebSocket from "ws";
+    import Logger from "./src/logger.cjs";
+    const logger = new Logger();
+    const ws = new WebSocket("ws://localhost:3001");
+
     import { Line } from 'vue-chartjs';
     import { Doughnut } from 'vue-chartjs'
     import * as chartConfig from '/assets/js/chartInfo.js'
@@ -75,25 +79,41 @@
     let error = ref({});
 
     // Stream to receive backend data & update graphs
-    const socket = io('http://localhost:3001', {  reconnectionDelayMax: 10000,});
-    console.log('zach is gay')
-    socket.on('bms data', (content) => {
-        // Update All data
-        data.value = content;
-        // Voltage
-        updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
-        // Current
-        updateCurrent(Number((data.value.current).slice(0, -1)));
-        // Battery
-        updateBattery(Number((data.value.SOC).slice(0, -1)));
-        // Reload Graphs
-        reloaded.value = !(reloaded.value)
+    // Old SocketIO Stuff
+    // const socket = io('http://localhost:3001', {  reconnectionDelayMax: 10000,});
+    // socket.on('bms data', (content) => {
+    //     // Update All data
+    //     data.value = content;
+    //     // Voltage
+    //     updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
+    //     // Current
+    //     updateCurrent(Number((data.value.current).slice(0, -1)));
+    //     // Battery
+    //     updateBattery(Number((data.value.SOC).slice(0, -1)));
+    //     // Reload Graphs
+    //     reloaded.value = !(reloaded.value)
+    // });
+    // socket.on('error', (content) => {
+    //     console.error("SOCKET ERROR: " + content);
+    //     error.value = content;
+    // });
+    // socket.emit('write to bms');
+
+    ws.on("error", console.error);
+
+    ws.on("open", function open() {
+        setInterval(() => {
+            ws.send("bms-data");
+            logger.log("Requested BMS data from server");
+        }, 500);
     });
-    socket.on('error', (content) => {
-        console.error("SOCKET ERROR: " + content);
-        error.value = content;
+
+    ws.on("message", function message(BMSdata) {
+        logger.log("Recieved " + BMSdata);
+        console.log("BMS Data Recieved: " + BMSdata);
+        data.value = BMSdata
     });
-    socket.emit('write to bms');
+
     // Testing Graphs & Values -- COMMENT THIS OUT WHEN PLUGGING IN BMS
     onMounted(() => {
         // function rand(min, max) {
