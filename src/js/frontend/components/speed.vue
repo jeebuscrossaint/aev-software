@@ -1,5 +1,8 @@
 <script setup>
-    import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
+    import WebSocket from "ws";
+    import Logger from "./src/logger.cjs";
+    const logger = new Logger();
+    const ws = new WebSocket("ws://localhost:3001");
     
     let speedToggle = ref(0);
     let speedColor = ref({
@@ -42,17 +45,24 @@
         return color;
     }
 
-    // JOSSAYA ADD SOCKETIO BACKEND CONNECTION HERE WITH AN UNUSED PORT & LMK
+    ws.on("error", console.error);
 
-    // done.
-    // ty
-    const socket = io('http://localhost:3001', {  reconnectionDelayMax: 10000,});
-    socket.on('gps data', (content) => {
-        speed.value = content.speed
+    ws.on("open", function open() {
+        setInterval(() => {
+            ws.send("gps-data");
+            logger.log("Requested GPS data from server");
+        }, 500);
     });
-    socket.on('error', (content) => {
- 
+
+    ws.on("message", function message(data) {
+        logger.log("Recieved " + data);
+        console.log("BMS Data Recieved: " + data);
     });
+
+    // ws.addEventListener("message", (event) => {
+    //     console.log("Message from server ", event.data);
+    // });
+
     // TEST DATA, COMMENT WHEN TESTING ACTUAL CAR
     // onMounted(() => {
     //     setInterval(() => {
