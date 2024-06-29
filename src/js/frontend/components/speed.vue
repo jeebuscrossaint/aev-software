@@ -57,6 +57,7 @@
     ws.on("message", function message(data) {
         logger.log("Recieved " + data);
         console.log("BMS Data Recieved: " + data);
+        speed.value = data
     });
 
     // ws.addEventListener("message", (event) => {
