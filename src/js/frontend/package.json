@@ -13,7 +13,10 @@
   "dependencies": {
     "@tresjs/nuxt": "^2.1.2",
     "chart.js": "^4.4.3",
+    "colors": "^1.4.0",
+    "node-gpsd": "^0.3.4",
     "nuxt": "3.6.5",
+    "serialport": "^12.0.0",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",
     "three": "^0.165.0",

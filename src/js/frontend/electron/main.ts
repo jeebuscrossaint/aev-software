@@ -1,11 +1,7 @@
-import { app, BrowserWindow } from 'electron'
-import {spawn, ChildProcess} from 'child_process';
+import { app, BrowserWindow, ipcMain } from 'electron'
+import {Config, Ports} from './types';
+import AEVBackend from './cjs_modules/backend';
 
-// import { fileURLToPath } from 'url';
-// import path from 'path';
-
-// const __dirname = path.dirname(fileURLToPath(import.meta.url));
-let backendProcess: ChildProcess;
 function createWindow(route = '/', title: string, icon: any) { //creates electron windows
   let win = new BrowserWindow({
     width: 1420,
@@ -20,28 +16,40 @@ function createWindow(route = '/', title: string, icon: any) { //creates electro
   });
   
   // win.loadURL(`file://${path.join(__dirname, '/react/build/index.html')}#${route}`);
-  win.loadURL(`${process.env.VITE_DEV_SERVER_URL}/#${route}`);  
+  win.loadURL(`${process.env.VITE_DEV_SERVER_URL}/#${route}`);
+  return win;  
 }
 
 
 app.whenReady().then(() => {
-// const ls = spawn('node', ['../serialport/index.js']);
+  let config: Config = {
+    MCU: {
+      path: "/dev/ttyUSB0",
+      baudRate: 115200,
+    },
+    GPS: {
+      path: "/dev/ttyAMA0"
+    }
+  }
 
-// ls.stdout.on('data', (data) => {
-//   console.log(`stdout: ${data}`);
-// });
+  let dashboard = createWindow('/', 'main', '../assets/dashboard.ico');
+  let cameras = createWindow('/cameras', 'cameras', '/cameras.ico');
+  let backend = new AEVBackend(config, console);
+  backend.callback = (event: string, data: any) => {
+    dashboard.webContents.send(event, data);
+  }
+  ipcMain.on('gps-data', () => {
+    backend.sendMessage('gps-data');
+  })
+  ipcMain.on('bms-data', () => {
+    backend.sendMessage('bms-data');
+  })
+  ipcMain.on('bms-restart', () => {
+    backend.sendMessage('bms-restart');
+  })
+  backend.start();
 
-// ls.stderr.on('data', (data) => {
-//   console.error(`stderr: ${data}`);
-// });
-
-// ls.on('close', (code) => {
-//   console.log(`child process exited with code ${code}`);
-// }); 
-  createWindow('/', 'main', '../assets/dashboard.ico');
-  createWindow('/cameras', 'cameras', '/cameras.ico');
 });
 app.on('window-all-closed', () => {
-  backendProcess.kill();
   app.quit();
 });
