@@ -108,7 +108,7 @@
     //     }, 300);
         setInterval(() => {
             socket.send("gps-data");
-            // socket.emit("bms-data", "bms-data");
+            socket.emit("bms-data", "bms-data");
         }, 550);
     });
 </script>

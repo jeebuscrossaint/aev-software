@@ -165,7 +165,7 @@
 
         setInterval(() => {
             socket.send("bms-data");
-            // socket.emit("bms-data", "bms-data");
+            socket.emit("bms-data", "bms-data");
         }, 500);
     });
 </script>

@@ -8,13 +8,13 @@
         <div v-if="videoDevices.length === 0" class="w-screen h-screen flex justify-center items-center text-7xl font-bold">No Cameras Detected.</div>
         <div v-else class="relative w-full h-screen">
             <div v-if="videoDevices[0]" :class="['absolute p-2 pb-1 top-0 left-0 w-full h-[55%] transition-all', { 'full-screen': fullScreen === 2 }]" @click="toggleFullScreen(2)">
-                <video class="rounded-xl object-fill w-full h-full" ref="videoElement2" autoplay></video>
+                <video class="rounded-xl object-fill w-full h-full" ref="videoElement1" autoplay></video>
             </div>
             <div v-if="videoDevices[1]" :class="['absolute p-2 pt-1 pr-1 bottom-0 left-0 w-1/2 h-[45%] transition-all', { 'full-screen': fullScreen === 0 }]" @click="toggleFullScreen(0)">
                 <video class="rounded-xl rounded-br-xl object-fill w-full h-full" ref="videoElement0" autoplay></video>
             </div>
             <div v-if="videoDevices[2]" :class="['absolute p-2 pt-1 pl-1 bottom-0 right-0 w-1/2 h-[45%] transition-all', { 'full-screen': fullScreen === 1 }]" @click="toggleFullScreen(1)">
-                <video class="rounded-xl rounded-bl-xl object-fill w-full h-full" ref="videoElement1" autoplay></video>
+                <video class="rounded-xl rounded-bl-xl object-fill w-full h-full" ref="videoElement2" autoplay></video>
             </div>
         </div>
     </div>
