@@ -9,7 +9,7 @@ class AEVBackend {
 		this.logger = logger;
 		this.config = config;
 		this.ports = {
-			MCU: {
+			BMS: {
 				enabled: false,
 				port: null,
 				parser: null,
@@ -37,7 +37,7 @@ class AEVBackend {
 		};
 
 		this.continue = {
-			MCU: true,
+			BMS: true,
 			GPS: true,
 		}
 
@@ -46,52 +46,52 @@ class AEVBackend {
 
 	start() {
 		this.logger.warn("Logger initialized in backend!");
-		this.initMCU();
+		this.initBMS();
 		this.initGPS();
 		this.initSocket();
 	}
 
-	initMCU() {
-		// Initialize serial port for MCU
-		if (fs.existsSync(this.config.MCU.path)) {
-			this.logger.success("MCU serial port is being opened...")
-			this.ports.MCU.enabled = true;
-			this.ports.MCU.port = new SerialPort({
-				path: this.config.MCU.path,
-				baudRate: this.config.MCU.baudRate,
+	initBMS() {
+		// Initialize serial port for BMS
+		if (fs.existsSync(this.config.BMS.path)) {
+			this.logger.success("BMS serial port is being opened...")
+			this.ports.BMS.enabled = true;
+			this.ports.BMS.port = new SerialPort({
+				path: this.config.BMS.path,
+				baudRate: this.config.BMS.baudRate,
 				autoOpen: false, 
 			});
 
-			this.ports.MCU.parser = this.ports.MCU.port.pipe(new DelimiterParser({
+			this.ports.BMS.parser = this.ports.BMS.port.pipe(new DelimiterParser({
 				delimiter: 'sh',
 			}));
 
 			// console.log(this.logger)
-			this.ports.MCU.port.on('open', () => {
+			this.ports.BMS.port.on('open', () => {
 				// const logger = this.logger;
-				this.logger.success("MCU serial port opened");
-				this.continue.MCU = true;
+				this.logger.success("BMS serial port opened");
+				this.continue.BMS = true;
 			});
-			this.ports.MCU.parser.on('data', (data) => {
+			this.ports.BMS.parser.on('data', (data) => {
 				this.parseBMSData(data.toString().split("\n"));
 			});
-			this.ports.MCU.port.on('error', (error) => {
-				// this.logger.warn(`MCU serial port error: ${error}`);
+			this.ports.BMS.port.on('error', (error) => {
+				// this.logger.warn(`BMS serial port error: ${error}`);
 			});
-			this.ports.MCU.port.on('close', () => {
-				this.logger.warn("MCU serial port closed");
-				this.continue.MCU = false;
+			this.ports.BMS.port.on('close', () => {
+				this.logger.warn("BMS serial port closed");
+				this.continue.BMS = false;
 			});
-			this.ports.MCU.port.on('drain', () => {
-				this.logger.success("MCU serial port drained (write failed)");
+			this.ports.BMS.port.on('drain', () => {
+				this.logger.success("BMS serial port drained (write failed)");
 			});
 
-			this.ports.MCU.port.open( (err) => {
+			this.ports.BMS.port.open( (err) => {
 				if (err) console.error(err)
 			})
 
 		} else {
-			this.logger.fail("MCU serial port not found at " + this.config.MCU.path);
+			this.logger.fail("BMS serial port not found at " + this.config.BMS.path);
 		}
 	}
 
@@ -139,14 +139,14 @@ class AEVBackend {
 		}
 	}
 
-	stopMCU() {
-		this.continue.MCU = false;
-		this.ports.MCU.port.close();
-		this.logger.warn("MCU serial port closed");
+	stopBMS() {
+		this.continue.BMS = false;
+		this.ports.BMS.port.close();
+		this.logger.warn("BMS serial port closed");
 	}
 
 	initSocket() {
-		if (this.ports.MCU.enabled || this.ports.GPS.enabled) {
+		if (this.ports.BMS.enabled || this.ports.GPS.enabled) {
 			// Initialize WebSocket server
 			this.wss = new WebSocketServer({ 
 				port: this.config.mainPort 
@@ -155,15 +155,21 @@ class AEVBackend {
 
 			this.wss.on('connection', (ws) => {
 				this.logger.success("Client connected to WebSocket server");
-				if (this.ports.MCU.enabled) {
-					if (this.ports.MCU.port.isOpen) {
+				if (this.ports.BMS.enabled) {
+					if (this.ports.BMS.port.isOpen) {
 						// Send BMS data to client half a second under a try-catch block
 						setInterval(() => {
 							try {
-								if (this.continue.MCU) {
-									this.ports.MCU.port.write("sh\n");
-									// ws.send(JSON.stringify(this.ports.MCU.data));
-									this.logger.debug("Updated BMS Data")
+								if (this.continue.BMS) {
+									try {
+										this.ports.BMS.port.write("\nsh\n");
+										this.ports.BMS.port.drain();
+										// ws.send(JSON.stringify(this.ports.BMS.data));
+										// this.logger.debug("Updated BMS Data")
+										this.logger.debug("Wrote all commands, waiting for data response");
+									} catch (error) {
+										console.log(error)
+									}
 								} else {
 									this.logger.warn("Told not to continue sending BMS data through socket");
 								}
@@ -181,7 +187,7 @@ class AEVBackend {
 					this.logger.debug("Received message from client: " + message);
 					if (message === "bms-data") {  
 						this.logger.success("Client requested BMS data, sending it over")
-						reply = JSON.stringify(this.ports.MCU.data);
+						reply = JSON.stringify(this.ports.BMS.data);
 					} else if (message === "gps-data") {
 						this.logger.success("Client requested GPS data, sending it over")
 						reply = JSON.stringify(this.ports.GPS.data);
@@ -195,8 +201,8 @@ class AEVBackend {
 						}
 					} else if (message === "bms-restart") {
 						try {
-							this.stopMCU();
-							this.initMCU();
+							this.stopBMS();
+							this.initBMS();
 							reply = "BMS restarted";
 							this.logger.success("BMS restarted");
 						} catch (error) {
@@ -218,7 +224,7 @@ class AEVBackend {
 	parseBMSData(data) {
 		// Parse BMS data
 		try {
-			// Trim the first two elements of the array and the last element of the array (useless bc first is "\r" and last is "mcu> ")
+			// Trim the first two elements of the array and the last element of the array (useless bc first is "\r" and last is "BMS> ")
 			data.shift();
 			data.shift();
 			data.pop();
@@ -311,11 +317,11 @@ class AEVBackend {
 
 			// this.logger.log(dataObj)
 
-			this.ports.MCU.data = dataObj;
-			return this.ports.MCU.data;
+			this.ports.BMS.data = dataObj;
+			return this.ports.BMS.data;
 		} catch (error) {
 			this.logger.warn("Error parsing BMS data: " + error);
-			return this.ports.MCU.data;
+			return this.ports.BMS.data;
 		}
 	}
 
