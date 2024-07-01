@@ -1,5 +1,5 @@
 <script setup>
-    import { io } from "socket.io-client";
+    // import { io } from "socket.io-client";
     // import { io } from "socket.io";
 
     import { Line } from 'vue-chartjs';
@@ -77,7 +77,46 @@
     let error = ref({});
 
     // Stream to receive backend data & update graphs
-    // Old SocketIO Stuff
+
+    /* PROPER WS IMPLEMENTATION */
+    const socket = new WebSocket("ws://localhost:3001");
+    // Message Handler
+    socket.onmessage = (event) => {
+        // Update All data
+        const split = (event.data).split("|");
+        if (split[0] === "bms-data") {
+            data.value = JSON.parse(split[1]);
+        }
+        // Voltage
+        updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
+        // Current
+        updateCurrent(Number((data.value.current).slice(0, -1)));
+        // Battery
+        updateBattery(Number((data.value.SOC).slice(0, -1)));
+        // Reload Graphs
+        reloaded.value = !(reloaded.value);
+    }
+
+    /* RESTAPI IMPLEMENTATION */
+    async function getBMSData(route) {
+        const response = await $fetch(`http://localhost:3001${route}`, {
+            method: 'GET'
+        })
+        if(route == '/bms/data'){
+            data.value = JSON.parse(response);
+            // Voltage
+            updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
+            // Current
+            updateCurrent(Number((data.value.current).slice(0, -1)));
+            // Battery
+            updateBattery(Number((data.value.SOC).slice(0, -1)));
+            // Reload Graphs
+            reloaded.value = !(reloaded.value);
+        }
+    }
+
+    /* SOCKETIO IMPLEMENTATION */
+    /*    
     const socket = io('ws://localhost:3001', {  reconnectionDelayMax: 10000,});
     socket.on('message', (content) => {
         // Update All data
@@ -98,74 +137,88 @@
         console.error("SOCKET ERROR: " + content);
         error.value = content;
     });
+    */
 
-    // ws.on("error", console.error);
+    /* BROKEN WS IMPLEMENTATION */
+    /*
+    ws.on("error", console.error);
 
-    // ws.on("open", function open() {
-    //     setInterval(() => {
-    //         ws.send("bms-data");
-    //     }, 500);
-    // });
+    ws.on("open", function open() {
+        setInterval(() => {
+            ws.send("bms-data");
+        }, 500);
+    });
 
-    // ws.on("message", function message(BMSdata) {
-    //     console.log("BMS Data Recieved: " + BMSdata);
-    //     data.value = BMSdata
+    ws.on("message", function message(BMSdata) {
+        console.log("BMS Data Recieved: " + BMSdata);
+        data.value = BMSdata
 
-    //     // Voltage
-    //     updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
-    //     // Current
-    //     updateCurrent(Number((data.value.current).slice(0, -1)));
-    //     // Battery
-    //     updateBattery(Number((data.value.SOC).slice(0, -1)));
-    //     // Reload Graphs
-    //     reloaded.value = !(reloaded.value);
+        // Voltage
+        updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
+        // Current
+        updateCurrent(Number((data.value.current).slice(0, -1)));
+        // Battery
+        updateBattery(Number((data.value.SOC).slice(0, -1)));
+        // Reload Graphs
+        reloaded.value = !(reloaded.value);
         
-    //     const split = BMSdata.split("|");
-    //     if (split[0] === "bms-data") {
-    //         data.value = JSON.parse(split[1]);
-    //     }
-    // });
+        const split = BMSdata.split("|");
+        if (split[0] === "bms-data") {
+            data.value = JSON.parse(split[1]);
+        }
+    });
+    */
 
-    // Testing Graphs & Values -- COMMENT THIS OUT WHEN PLUGGING IN BMS
     onMounted(() => {
-        // function rand(min, max) {
-        //     return Math.random() * (max - min) + min;
-        // }
-        // data.value = {
-        //     "voltage":"91.84v",
-        //     "cells":"30(notlocked)",
-        //     "mean":"3.062v",
-        //     "stddev":"0.037v",
-        //     "alerts":"notlocked",
-        //     "current":"-5.2A",
-        //     "SOC":"4%",
-        //     "uptime":["0","34","26"]
-        // }
-        // let battIteration = 0;
-        // setInterval(async () => {
-        //     // Voltage
-        //     let randVolt = rand(75, 90);
-        //     data.value.voltage = Math.round(randVolt * 100) / 100;
-        //     updateVoltage(randVolt, randVolt/30);
-        //     // Current
-        //     let randCurr = rand(-8, 10);
-        //     data.value.current = Math.round(randCurr * 100) / 100;
-        //     updateCurrent(randCurr);
-        //     // Battery
-        //     let battCycl = [100, 74, 40, 26, 10, 4];
-        //     data.value.SOC = battCycl[battIteration];
-        //     updateBattery(battCycl[battIteration]);
-        //     battIteration++;
-        //     if(battIteration == 6){
-        //         battIteration = 0;
-        //     }
-        //     // Reload Graphs
-        //     reloaded.value = !(reloaded.value)
-        // }, 550);
+        /* Testing Graphs & Values -- COMMENT THIS OUT WHEN PLUGGING IN BMS */
+        /*
+        function rand(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+        data.value = {
+            "voltage":"91.84v",
+            "cells":"30(notlocked)",
+            "mean":"3.062v",
+            "stddev":"0.037v",
+            "alerts":"notlocked",
+            "current":"-5.2A",
+            "SOC":"4%",
+            "uptime":["0","34","26"]
+        }
+        let battIteration = 0;
+        setInterval(async () => {
+            // Voltage
+            let randVolt = rand(75, 90);
+            data.value.voltage = Math.round(randVolt * 100) / 100;
+            updateVoltage(randVolt, randVolt/30);
+            // Current
+            let randCurr = rand(-8, 10);
+            data.value.current = Math.round(randCurr * 100) / 100;
+            updateCurrent(randCurr);
+            // Battery
+            let battCycl = [100, 74, 40, 26, 10, 4];
+            data.value.SOC = battCycl[battIteration];
+            updateBattery(battCycl[battIteration]);
+            battIteration++;
+            if(battIteration == 6){
+                battIteration = 0;
+            }
+            // Reload Graphs
+            reloaded.value = !(reloaded.value)
+        }, 550);
+        */
 
         setInterval(() => {
-            socket.send("bms-data");
+            /* SOCKETIO IMPLEMENTATION */
+            // socket.send("bms-data");
             // socket.emit("bms-data", "bms-data");
+
+            /* WS IMPLEMENTATION */
+            socket.send("bms-data");
+
+            /* RESTAPI IMPLEMENTATION - (Make single button to restart BMS and log its status to console when pressed if we use this implementation) */
+            // getBMSData('/bms/data');
+
         }, 500);
     });
 </script>
@@ -231,11 +284,11 @@
                     <!--Battery Gaugue-->
                     <div v-if="reloaded" class="w-[45%] h-full flex justify-center items-center">
                         <!-- This calculates the SOC based on voltage BTW... (its being devided by 33 since 108-75 (max/min voltage) is 33) -->
-                        <h1 class="text-4xl sm:text-6xl font-bold absolute"><br>{{ Math.round((((Number((data.value.voltage).slice(0, -1)))-75)/33)*100) }}</h1> 
+                        <h1 class="text-4xl sm:text-6xl font-bold absolute"><br>{{ data.SOC }}</h1> 
                         <Doughnut :data="battery" :options="batteryChart" class="w-full" />
                     </div>
                     <div v-if="!reloaded" class="w-[45%] h-full flex justify-center items-center">
-                        <h1 class="text-4xl sm:text-6xl font-bold absolute"><br>{{ Math.round((((Number((data.value.voltage).slice(0, -1)))-75)/33)*100) }}</h1>
+                        <h1 class="text-4xl sm:text-6xl font-bold absolute"><br>{{ data.SOC }}</h1>
                         <Doughnut :data="battery" :options="batteryChart" class="w-full" />
                     </div>
                 </section>
