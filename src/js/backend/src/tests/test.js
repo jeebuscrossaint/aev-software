@@ -13,5 +13,5 @@ ws.on("open", function open() {
 });
 
 ws.on("message", function message(data) {
-	logger.log("Recieved: " + `${data}`);
+	logger.log(`${data}`);
 });

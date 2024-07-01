@@ -14,6 +14,7 @@ class AEVBackend {
 				enabled: false,
 				port: null,
 				parser: null,
+				interval: false,
 				data: {
 					voltage: "0v",
 					cells: "0",
@@ -24,6 +25,10 @@ class AEVBackend {
 					SOC: "0%",
 					uptime: [ "0", "0", "0" ],
 				},
+				debug: {
+					parser: null,
+					noRes: 0,
+				}
 			},
 			GPS: {
 				enabled: false,
@@ -47,10 +52,11 @@ class AEVBackend {
 	}
 
 	start() {
-		this.logger.warn("Logger initialized in backend!");
+		// this.logger.warn("Logger initialized in backend!");
 		this.initBMS();
 		this.initGPS();
 		this.initSocket();
+		this.initAPI();
 	}
 
 	initBMS() {
@@ -73,9 +79,56 @@ class AEVBackend {
 				// const logger = this.logger;
 				this.logger.success("BMS serial port opened");
 				this.continue.BMS = true;
+
+				// Send BMS data to client half a second under a try-catch block
+				if (!this.ports.BMS.interval) {
+					this.ports.BMS.interval = true;
+					setInterval(() => {
+						try {
+							if (this.continue.BMS) {
+								try {
+									this.ports.BMS.port.write("\nsh\n");
+									this.ports.BMS.port.drain();
+									// ws.send(JSON.stringify(this.ports.BMS.data));
+									// this.logger.debug("Updated BMS Data")
+									this.ports.BMS.debug.noRes += 1;
+	
+									if (this.ports.BMS.debug.noRes > 3) {
+										this.logger.warn("No response from BMS in 3 seconds, restarting BMS");
+										this.stopBMS();
+										// Wait 1 second before restarting BMS
+										setTimeout(() => { 
+											this.initBMS();
+											this.ports.BMS.debug.noRes = 0;
+										}, 1000);
+									}
+									this.logger.debug("Wrote all commands, waiting for data response");
+								} catch (error) {
+									console.log(error)
+								}
+							} else {
+								this.logger.warn("Told not to continue sending BMS data through socket");
+							}
+						} catch (error) {
+							this.logger.warn("Error updating BMS data: " + error);
+						}
+					}, 750);
+				}
+
+				// Stop interval if BMS is disabled
+				setInterval(() => {
+					if (!this.ports.BMS.enabled) {
+						clearInterval();
+					}
+				}, 1000);
 			});
 			this.ports.BMS.parser.on('data', (data) => {
-				this.parseBMSData(data.toString().split("\n"));
+				try {
+					this.parseBMSData(data.toString().split("\n"));
+				} catch {
+					this.logger.warn("Error calling BMS data parser + " + error);
+				}
+				
 			});
 			this.ports.BMS.port.on('error', (error) => {
 				// this.logger.warn(`BMS serial port error: ${error}`);
@@ -94,6 +147,12 @@ class AEVBackend {
 
 		} else {
 			this.logger.fail("BMS serial port not found at " + this.config.BMS.path);
+		}
+
+		if (this.ports.BMS.enabled) {
+			if (this.ports.BMS.port.isOpen) {
+				
+			}
 		}
 	}
 
@@ -164,31 +223,6 @@ class AEVBackend {
 
 			this.wss.on('connection', (ws) => {
 				this.logger.success("Client connected to WebSocket server");
-				if (this.ports.BMS.enabled) {
-					if (this.ports.BMS.port.isOpen) {
-						// Send BMS data to client half a second under a try-catch block
-						setInterval(() => {
-							try {
-								if (this.continue.BMS) {
-									try {
-										this.ports.BMS.port.write("\nsh\n");
-										this.ports.BMS.port.drain();
-										// ws.send(JSON.stringify(this.ports.BMS.data));
-										// this.logger.debug("Updated BMS Data")
-										this.logger.debug("Wrote all commands, waiting for data response");
-									} catch (error) {
-										console.log(error)
-									}
-								} else {
-									this.logger.warn("Told not to continue sending BMS data through socket");
-								}
-							} catch (error) {
-								this.logger.warn("Error updating BMS data: " + error);
-							}
-						}, 500);
-					}
-				}
-
 				ws.on('message', (message) => {
 					message = message.toString();
 					let prefix = message;
@@ -217,6 +251,17 @@ class AEVBackend {
 						} catch (error) {
 							this.logger.warn("Error restarting BMS: " + error);
 						}
+					} else if (message === "bms-debug") {
+						ws.send("BMS debug mode enabled");
+						const debugBMS = this.ports.BMS.port.pipe(new DelimiterParser({
+							delimiter: '\n',
+						}));
+						debugBMS.on('data', (data) => {
+							// console.log(data.toString());
+							ws.send(data.toString());
+						});
+
+
 					} else {
 						reply = "Unknown message"
 						this.logger.warn("Unknown message received from client: " + `"${message}"`);
@@ -392,10 +437,29 @@ class AEVBackend {
 
 			// this.logger.log(dataObj)
 
-			this.ports.BMS.data = dataObj;
+			
+			const finalData = {
+				voltage: dataObj.voltage,
+				cells: dataObj.cells,
+				mean: dataObj.mean,
+				stddev: dataObj.stddev,
+				alerts: dataObj.alerts,
+				current: dataObj.current,
+				SOC: dataObj.SOC,
+				uptime: dataObj.uptime,
+			};
+			
+			// console.log("Raw BMS data: \n\n" + JSON.stringify(data));
+			console.log("Parsed BMS data: " + JSON.stringify(finalData));
+			this.ports.BMS.data = finalData;
+			this.ports.BMS.debug.noRes = 0;
+			this.logger.success("Parsed and updated BMS data");
 			return this.ports.BMS.data;
+
 		} catch (error) {
 			this.logger.warn("Error parsing BMS data: " + error);
+			console.log(error);
+
 			return this.ports.BMS.data;
 		}
 	}
