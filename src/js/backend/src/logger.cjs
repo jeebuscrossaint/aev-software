@@ -1,12 +1,12 @@
 // Original logger code from RealStr1ke/Byte
 
-const colors = require("colors");
+const colors = require('colors');
 
 
 class Logger {
 
 	constructor() {
-		this.startup("Logger initialized!");
+		this.startup('Logger initialized!');
 	}
 
 	log(message) {

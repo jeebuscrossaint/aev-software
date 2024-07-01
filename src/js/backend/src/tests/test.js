@@ -1,17 +1,17 @@
-import WebSocket from "ws";
-import Logger from "../logger.cjs";
+import WebSocket from 'ws';
+import Logger from '../logger.cjs';
 const logger = new Logger();
-const ws = new WebSocket("ws://localhost:3001");
+const ws = new WebSocket('ws://localhost:3001');
 
-ws.on("error", console.error);
+ws.on('error', console.error);
 
-ws.on("open", function open() {
+ws.on('open', function open() {
 	// Prompt the user for input (take it on new line)
-	process.stdin.on("data", function(data) {
+	process.stdin.on('data', function(data) {
 		ws.send(data.toString().trim());
 	});
 });
 
-ws.on("message", function message(data) {
+ws.on('message', function message(data) {
 	logger.log(`${data}`);
 });
