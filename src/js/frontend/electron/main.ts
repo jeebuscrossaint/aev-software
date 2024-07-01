@@ -20,7 +20,7 @@ function createWindow(route = '/', title: string, icon: any) { //creates electro
   });
   
   // win.loadURL(`file://${path.join(__dirname, '/react/build/index.html')}#${route}`);
-  win.loadURL(`${process.env.VITE_DEV_SERVER_URL}/#${route}`);  
+  win.loadURL(`http://localhost:5151/#${route}`);  
 }
 
 
