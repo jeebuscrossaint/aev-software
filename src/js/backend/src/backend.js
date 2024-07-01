@@ -4,6 +4,7 @@ import { Daemon, Listener } from 'node-gpsd';
 import { WebSocketServer } from 'ws';
 import express from 'express';
 import fs from 'fs';
+import child_process from 'child_process';
 
 class AEVBackend {
 	constructor(config, logger) {
@@ -14,7 +15,6 @@ class AEVBackend {
 				enabled: false,
 				port: null,
 				parser: null,
-				interval: false,
 				data: {
 					voltage: '0v',
 					cells: '0',
@@ -27,6 +27,8 @@ class AEVBackend {
 				},
 				debug: {
 					parser: null,
+					interval: false,
+					waiting: false,
 					noRes: 0,
 				},
 			},
@@ -51,17 +53,18 @@ class AEVBackend {
 		this.wss = null;
 	}
 
-	start() {
+	async start() {
 		// this.logger.warn("Logger initialized in backend!");
-		this.initBMS();
+		await this.initBMS();
 		this.initGPS();
 		this.initSocket();
 		this.initAPI();
 	}
 
-	initBMS() {
+	async initBMS() {
 		// Initialize serial port for BMS
 		if (fs.existsSync(this.config.BMS.path)) {
+			this.continue.BMS = 2;
 			this.logger.success('BMS serial port is being opened...');
 			this.ports.BMS.enabled = true;
 			this.ports.BMS.port = new SerialPort({
@@ -78,49 +81,58 @@ class AEVBackend {
 			this.ports.BMS.port.on('open', () => {
 				// const logger = this.logger;
 				this.logger.success('BMS serial port opened');
-				this.continue.BMS = true;
+				this.continue.BMS = 3;
+				this.ports.BMS.debug.noRes = 0;
 
-				// Send BMS data to client half a second under a try-catch block
-				if (!this.ports.BMS.interval) {
-					this.ports.BMS.interval = true;
-					setInterval(() => {
-						try {
-							if (this.continue.BMS) {
-								try {
-									this.ports.BMS.port.write('\nsh\n');
-									this.ports.BMS.port.drain();
-									// ws.send(JSON.stringify(this.ports.BMS.data));
-									// this.logger.debug("Updated BMS Data")
-									this.ports.BMS.debug.noRes += 1;
+				// check tests/old-bms-init.js for old code
 
-									if (this.ports.BMS.debug.noRes > 3) {
-										this.logger.warn('No response from BMS in 3 seconds, restarting BMS');
-										this.stopBMS();
-										// Wait 1 second before restarting BMS
-										setTimeout(() => {
-											this.initBMS();
-											this.ports.BMS.debug.noRes = 0;
-										}, 1000);
-									}
-									this.logger.debug('Wrote all commands, waiting for data response');
-								} catch (error) {
-									console.log(error);
-								}
+				if (!this.ports.BMS.debug.interval) {
+					this.ports.BMS.debug.interval = true;
+					this.ports.BMS.debug.waiting = false;
+
+					setInterval(async () => {
+						if (this.continue.BMS !== 3) {
+							if (this.continue.BMS === 0 && !this.ports.BMS.port.isOpen) {
+								this.logger.debug('BMS serial port is not open, restarting BMS');
+								await this.initBMS();
+							} else if (this.continue.BMS === 1 && this.ports.BMS.port.isOpen) {
+								this.logger.debug('BMS serial port is closing, ignoring request');
+							} else if (this.continue.BMS === 2) {
+								this.logger.debug('BMS serial port is opening, ignoring request');
 							} else {
-								this.logger.warn('Told not to continue sending BMS data through socket');
+								this.logger.debug('BMS serial port is in an unknown state, restarting BMS');
+								await this.stopBMS();
+								await this.initBMS();
 							}
-						} catch (error) {
-							this.logger.warn('Error updating BMS data: ' + error);
+						} else if (this.continue.BMS === 3 && this.ports.BMS.port.isOpen) {
+							if (this.ports.BMS.debug.noRes >= 3) {
+								this.logger.warn('BMS serial port is not responding, putting it into an unknown state for restart');
+								this.continue.BMS = -1;
+							}
+
+							this.ports.BMS.port.write('\nsh\n', (error) => {
+								if (error) {
+									this.logger.warn('BMS write failed: ' + error);
+									this.ports.BMS.debug.noRes += 1;
+								}
+							});
+
+							if (this.ports.BMS.debug.waiting) {
+								this.ports.BMS.debug.noRes += 1;
+								// if (this.ports.BMS.debug.noRes >= 3) {
+								// 	this.logger.warn('BMS serial port is not responding, putting it into an unknown state for restart');
+								// 	this.continue.BMS = -1;
+								// }
+							}
+							this.logger.debug('Wrote all commands, waiting for data response');
+							this.ports.BMS.debug.waiting = true;
+						} else {
+							this.continue.BMS = -1;
 						}
-					}, 750);
+					}, 500);
 				}
 
-				// Stop interval if BMS is disabled
-				setInterval(() => {
-					if (!this.ports.BMS.enabled) {
-						clearInterval();
-					}
-				}, 1000);
+
 			});
 			this.ports.BMS.parser.on('data', (data) => {
 				try {
@@ -135,14 +147,31 @@ class AEVBackend {
 			});
 			this.ports.BMS.port.on('close', () => {
 				this.logger.warn('BMS serial port closed');
-				this.continue.BMS = false;
+				this.continue.BMS = 0;
 			});
 			this.ports.BMS.port.on('drain', () => {
 				this.logger.success('BMS serial port drained (write failed)');
 			});
 
 			this.ports.BMS.port.open((err) => {
-				if (err) console.error(err);
+				if (err) {
+					this.logger.fail('Error opening BMS serial port: ' + err);
+					// run "sudo fuser -k ${this.config.BMS.path}" asynchronously using os module
+					child_process.exec(`sudo fuser -k ${this.config.BMS.path}`, (error, stdout, stderr) => {
+						if (error) {
+							this.logger.warn('Error killing BMS serial port process: ' + error);
+						}
+						if (stdout) {
+							this.logger.success('Killed BMS serial port process: ' + stdout);
+						}
+						if (stderr) {
+							this.logger.warn('Error killing BMS serial port process: ' + stderr);
+						}
+					});
+
+
+					this.continue.BMS = 0;
+				}
 			});
 
 		} else {
@@ -167,7 +196,7 @@ class AEVBackend {
 				pid: '/tmp/gpsd.pid',
 				readOnly: false,
 				logger: {
-					// info: function() {},
+					info: function() {},
 					warn: console.warn,
 					error: console.error,
 				},
@@ -177,7 +206,7 @@ class AEVBackend {
 				port: 2947,
 				hostname: 'localhost',
 				logger:  {
-					// info: function() {},
+					info: function() {},
 					warn: console.warn,
 					error: console.error,
 				},
@@ -207,13 +236,14 @@ class AEVBackend {
 		this.logger.warn('GPS daemon stopped');
 	}
 
-	stopBMS() {
-		this.continue.BMS = false;
-		this.ports.BMS.port.close();
+	async stopBMS() {
+		this.continue.BMS = 1;
+		await this.ports.BMS.port.close();
+		// this.continue.BMS = 0;
 		this.logger.warn('BMS serial port closed');
 	}
 
-	initSocket() {
+	async initSocket() {
 		if (this.ports.BMS.enabled || this.ports.GPS.enabled) {
 			// Initialize WebSocket server
 			this.wss = new WebSocketServer({
@@ -223,7 +253,7 @@ class AEVBackend {
 
 			this.wss.on('connection', (ws) => {
 				this.logger.success('Client connected to WebSocket server');
-				ws.on('message', (message) => {
+				ws.on('message', async (message) => {
 					message = message.toString();
 					const prefix = message;
 					let reply;
@@ -244,8 +274,8 @@ class AEVBackend {
 						}
 					} else if (message === 'bms-restart') {
 						try {
-							this.stopBMS();
-							this.initBMS();
+							await this.stopBMS();
+							await this.initBMS();
 							reply = 'BMS restarted';
 							this.logger.success('BMS restarted');
 						} catch (error) {
