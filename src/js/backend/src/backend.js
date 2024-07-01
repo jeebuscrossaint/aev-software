@@ -2,6 +2,7 @@
 import { SerialPort, DelimiterParser } from 'serialport';
 import {Daemon, Listener} from 'node-gpsd';
 import { WebSocketServer } from 'ws';
+import express from 'express';
 import fs from "fs";
 
 class AEVBackend {
@@ -41,6 +42,7 @@ class AEVBackend {
 			GPS: true,
 		}
 
+		this.api = null;
 		this.wss = null;
 	}
 
@@ -139,6 +141,13 @@ class AEVBackend {
 		}
 	}
 
+	stopGPS() {
+		this.continue.GPS = false;
+		this.ports.GPS.listener.disconnect();
+		this.ports.GPS.daemon.stop();
+		this.logger.warn("GPS daemon stopped");
+	}
+
 	stopBMS() {
 		this.continue.BMS = false;
 		this.ports.BMS.port.close();
@@ -219,6 +228,72 @@ class AEVBackend {
 
 			// this.wss.
 		}
+	}
+
+	initAPI() {
+		this.api = express();
+		this.api.use(express.json());
+
+		this.api.get('/', (req, res) => {
+			this.logger.success("Recieved GET request on /, replied with API status");
+			res.send({
+				message: "API server is running",
+				ports: {
+					BMS: this.ports.BMS.enabled,
+					GPS: this.ports.GPS.enabled,
+				}
+			});
+		});
+
+		this.api.get('/bms', (req, res) => {
+			this.logger.success("Recieved GET request on /bms, replied with BMS status: " + this.ports.BMS.enabled);
+			if (this.ports.GPS.enabled) {
+				res.send({ enabled: true });
+			} else {
+				res.send({ enabled: false });
+			}
+		});
+		this.api.get('/bms/data', (req, res) => {
+			this.logger.success("Recieved GET request on /bms/data, replied with BMS data");
+			res.send(JSON.stringify(this.ports.BMS.data));
+		});
+		this.api.get('/bms/restart', (req, res) => {
+			try {
+				this.logger.success("Recieved GET request on /bms/restart, restarting BMS");
+				this.stopBMS();
+				this.initBMS();
+				res.send({ status: "BMS restarted" });
+			} catch (error) {
+				res.send({ status: "Error restarting BMS: " + error });
+			}
+		});
+
+		this.api.get('/gps', (req, res) => {
+			this.logger.success("Recieved GET request on /gps, replied with GPS status: " + this.ports.GPS.enabled);
+			if (this.ports.GPS.enabled) {
+				res.send({ enabled: true });
+			} else {
+				res.send({ enabled: false });
+			}
+		});
+		this.api.get('/gps/data', (req, res) => {
+			this.logger.success("Recieved GET request on /gps/data, replied with GPS data");
+			res.send(JSON.stringify(this.ports.GPS.data));
+		});
+		this.api.get('/gps/restart', (req, res) => {
+			try {
+				this.logger.success("Recieved GET request on /gps/restart, restarting GPS");
+				this.stopGPS();
+				this.initGPS();
+				res.send({ status: "GPS restarted" });
+			} catch (error) {
+				res.send({ status: "Error restarting GPS: " + error });
+			}
+		});
+
+		this.api.listen(3002, () => {
+			this.logger.success("API server started on port", 3002);
+		});
 	}
 
 	parseBMSData(data) {
