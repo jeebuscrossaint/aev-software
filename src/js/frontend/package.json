@@ -1,7 +1,6 @@
 {
   "name": "nuxt-app",
   "private": true,
-  "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
     "build": "nuxt build --no-fork",
@@ -26,6 +25,7 @@
     "ws": "^8.17.1"
   },
   "devDependencies": {
+    "@electron/rebuild": "^3.6.0",
     "autoprefixer": "^10.4.19",
     "electron": "^30.0.8",
     "electron-builder": "^24.13.3",

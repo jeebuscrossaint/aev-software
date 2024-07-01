@@ -1,12 +1,8 @@
 <script setup>
-    import { io } from "socket.io-client";
-    // import { io } from "socket.io";
-
     import { Line } from 'vue-chartjs';
     import { Doughnut } from 'vue-chartjs'
     import * as chartConfig from '/assets/js/chartInfo.js'
     import {Chart as ChartJS,CategoryScale,LinearScale,PointElement,LineElement,Title,Tooltip,Legend,Filler,Decimation,ArcElement} from 'chart.js';
-    
     // Data for chart renders & reactivity
     ChartJS.register(CategoryScale,LinearScale,PointElement,LineElement,Title,Tooltip,Legend,Filler,Decimation,ArcElement);
     let reloaded = ref(true);
@@ -78,6 +74,8 @@
 
     // Stream to receive backend data & update graphs
     // Old SocketIO Stuff
+    
+    /* We using Electron now.
     const socket = io('ws://localhost:3001', {  reconnectionDelayMax: 10000,});
     socket.on('message', (content) => {
         // Update All data
@@ -98,7 +96,8 @@
         console.error("SOCKET ERROR: " + content);
         error.value = content;
     });
-
+*/ 
+    
     // ws.on("error", console.error);
 
     // ws.on("open", function open() {
@@ -162,10 +161,19 @@
         //     // Reload Graphs
         //     reloaded.value = !(reloaded.value)
         // }, 550);
-
+        window.electron.send('bms-data');
+        window.electron.receive('bms-data', (data)=> {
+        // Voltage
+        updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
+        // Current
+        updateCurrent(Number((data.value.current).slice(0, -1)));
+        // Battery
+        updateBattery(Number((data.value.SOC).slice(0, -1)));
+        // Reload Graphs
+        reloaded.value = !(reloaded.value);
+    });
         setInterval(() => {
-            socket.send("bms-data");
-            socket.emit("bms-data", "bms-data");
+            window.electron.send('bms-data');
         }, 500);
     });
 </script>
