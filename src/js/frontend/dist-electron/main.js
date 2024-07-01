@@ -1,17 +1,17 @@
 import { app as e, BrowserWindow as i } from "electron";
 let r;
-function a(n = "/", o, t) {
+function a(o = "/", t, n) {
   new i({
     width: 1420,
     height: 900,
-    title: o,
-    icon: t,
+    title: t,
+    icon: n,
     webPreferences: {
       nodeIntegration: !0,
       contextIsolation: !1
     },
     autoHideMenuBar: !0
-  }).loadURL(`${process.env.VITE_DEV_SERVER_URL}/#${n}`);
+  }).loadURL(`http://localhost:5151/#${o}`);
 }
 e.whenReady().then(() => {
   a("/", "main", "../assets/dashboard.ico"), a("/cameras", "cameras", "/cameras.ico");
