@@ -1,5 +1,5 @@
 <script setup>
-    import { io } from "socket.io-client";
+    // import { io } from "socket.io-client";
     // import { io } from "socket.io";
 
     let speedToggle = ref(0);
@@ -43,27 +43,33 @@
         return color;
     }
 
-    // ws.on("error", console.error);
+    // Stream to receive backend data (Speed in this case)
 
-    // ws.on("open", function open() {
-    //     setInterval(() => {
-    //         ws.send("gps-data");
-    //         console.log("Requested GPS data from server");
-    //     }, 500);
-    // });
+    /* PROPER WS IMPLEMENTATION */
+    const socket = new WebSocket("ws://localhost:3001");
+    // Message Handler
+    socket.onmessage = (event) => {
+        // Update Speed data
+        const split = (event.data).split("|");
+        if (split[0] === "gps-data") {
+            speed.value = (JSON.parse(split[1])).speed;
+            speedColor.value = getColorForSpeed(Number(speed.value));
+        }   
+    }
 
-    // ws.on("message", function message(GPSData) {
-    //     console.log("GPS Data Recieved: " + data);
-    //     const split = GPSData.split("|");
-    //     if (split[0] === "gps-data") {
-    //         data.value = JSON.parse(split[1]);
-    //     }
-    // });
-
-    // ws.addEventListener("message", (event) => {
-    //     console.log("Message from server ", event.data);
-    // });
-
+    /* RESTAPI IMPLEMENTATION */
+    async function getGPSData(route) {
+        const response = await $fetch(`http://localhost:3001${route}`, {
+            method: 'GET'
+        })
+        if(route == '/gps/data'){
+            speed.value = JSON.parse(response);
+            speedColor.value = getColorForSpeed(Number(speed.value));
+        }
+    }
+    
+    /* SOCKETIO IMPLEMENTATION */
+    /*
     const socket = io('ws://localhost:3001', {  reconnectionDelayMax: 10000,});
     socket.on('message', content => {        
         // Update All data
@@ -77,38 +83,71 @@
         console.error("SOCKET ERROR: " + content);
         error.value = content;
     });
+    */
 
+    /* BROKEN WS IMPLEMENTATION */
+    /*
+    ws.on("error", console.error);
 
-    // TEST DATA, COMMENT WHEN TESTING ACTUAL CAR
-    onMounted(() => {
-    //     setInterval(() => {
-    //         // ALL THIS WILL BE UPDATED WITH SERIALPORT UPDATE THIS IS STATIC FOR NOW WITH INTERVAL TEST CASE
-    //         if(speed.value >= 40){
-    //             speed.value = 0;
-    //             if(speed.value == 0){
-    //                 speedToggle.value = 0;
-    //                 speedColor.value = getColorForSpeed(speed.value);
-    //             }
-    //             else{
-    //                 speedToggle.value = 20;
-    //                 speedColor.value = getColorForSpeed(speed.value);
-    //             }
-    //         }
-    //         else{
-    //             speed.value += 1;
-    //             if(speed.value == 0){
-    //                 speedToggle.value = 0;
-    //                 speedColor.value = getColorForSpeed(speed.value);
-    //             }
-    //             else{
-    //                 speedToggle.value = 20;
-    //                 speedColor.value = getColorForSpeed(speed.value);
-    //             }
-    //         }
-    //     }, 300);
+    ws.on("open", function open() {
         setInterval(() => {
+            ws.send("gps-data");
+            console.log("Requested GPS data from server");
+        }, 500);
+    });
+
+    ws.on("message", function message(GPSData) {
+        console.log("GPS Data Recieved: " + data);
+        const split = GPSData.split("|");
+        if (split[0] === "gps-data") {
+            data.value = JSON.parse(split[1]);
+        }
+    });
+
+    ws.addEventListener("message", (event) => {
+        console.log("Message from server ", event.data);
+    });
+    */
+
+    onMounted(() => {
+        /* TEST DATA, COMMENT WHEN TESTING ACTUAL CAR */    
+        /*
+        setInterval(() => {
+            // ALL THIS WILL BE UPDATED WITH SERIALPORT UPDATE THIS IS STATIC FOR NOW WITH INTERVAL TEST CASE
+            if(speed.value >= 40){
+                speed.value = 0;
+                if(speed.value == 0){
+                    speedToggle.value = 0;
+                    speedColor.value = getColorForSpeed(speed.value);
+                }
+                else{
+                    speedToggle.value = 20;
+                    speedColor.value = getColorForSpeed(speed.value);
+                }
+            }
+            else{
+                speed.value += 1;
+                if(speed.value == 0){
+                    speedToggle.value = 0;
+                    speedColor.value = getColorForSpeed(speed.value);
+                }
+                else{
+                    speedToggle.value = 20;
+                    speedColor.value = getColorForSpeed(speed.value);
+                }
+            }
+        }, 300);
+        */
+        setInterval(() => {
+            /* SOCKETIO IMPLEMENTATION */
+            // socket.send("gps-data");
+            // socket.emit("gps-data", "gps-data");
+            
+            /* WS IMPLEMENTATION */
             socket.send("gps-data");
-            socket.emit("bms-data", "bms-data");
+
+            /* RESTAPI IMPLEMENTATION - (Make single button to restart BMS and log its status to console when pressed if we use this implementation) */
+            // getGPSData('/gps/data');
         }, 550);
     });
 </script>
