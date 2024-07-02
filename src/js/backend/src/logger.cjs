@@ -1,7 +1,7 @@
 // Original logger code from RealStr1ke/Byte
 
 const colors = require('colors');
-
+const config = require('./config');
 
 class Logger {
 
@@ -20,7 +20,7 @@ class Logger {
 	}
 
 	debug(info) {
-		console.log(`${colors.bgGray(` ${new Date().toLocaleTimeString()} `)}${colors.bgBrightYellow.white(' ! ')} ${info}`);
+		if (config.debug) console.log(`${colors.bgGray(` ${new Date().toLocaleTimeString()} `)}${colors.bgBrightYellow.white(' ! ')} ${info}`);
 	}
 
 	warn(info) {

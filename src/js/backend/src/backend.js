@@ -25,6 +25,10 @@ class AEVBackend {
 					SOC: '0%',
 					uptime: [ '0', '0', '0' ],
 				},
+				alerts: {
+					parser: null,
+					list: [],
+				},
 				debug: {
 					parser: null,
 					interval: false,
@@ -65,7 +69,7 @@ class AEVBackend {
 		// Initialize serial port for BMS
 		if (fs.existsSync(this.config.BMS.path)) {
 			this.continue.BMS = 2;
-			this.logger.success('BMS serial port is being opened...');
+			this.logger.debug('BMS serial port is being opened...');
 			this.ports.BMS.enabled = true;
 			this.ports.BMS.port = new SerialPort({
 				path: this.config.BMS.path,
@@ -75,6 +79,9 @@ class AEVBackend {
 
 			this.ports.BMS.parser = this.ports.BMS.port.pipe(new DelimiterParser({
 				delimiter: 'sh',
+			}));
+			this.ports.BMS.alerts.parser = this.ports.BMS.port.pipe(new DelimiterParser({
+				delimiter: '\n',
 			}));
 
 			// console.log(this.logger)
@@ -134,6 +141,17 @@ class AEVBackend {
 
 
 			});
+			this.ports.BMS.port.on('error', (error) => {
+				this.logger.warn(`BMS serial port error: ${error}`);
+			});
+			this.ports.BMS.port.on('close', () => {
+				this.logger.debug('BMS serial port closed');
+				this.continue.BMS = 0;
+			});
+			this.ports.BMS.port.on('drain', () => {
+				this.logger.warn('BMS serial port drained (write failed)');
+			});
+
 			this.ports.BMS.parser.on('data', (data) => {
 				try {
 					this.parseBMSData(data.toString().split('\n'));
@@ -142,21 +160,14 @@ class AEVBackend {
 				}
 
 			});
-			this.ports.BMS.port.on('error', (error) => {
-				this.logger.warn(`BMS serial port error: ${error}`);
-			});
-			this.ports.BMS.port.on('close', () => {
-				this.logger.warn('BMS serial port closed');
-				this.continue.BMS = 0;
-			});
-			this.ports.BMS.port.on('drain', () => {
-				this.logger.success('BMS serial port drained (write failed)');
+			this.ports.BMS.alerts.parser.on('data', (data) => {
+				const possibleAlert = parseAlert(data.toString());
+				if (possibleAlert) this.ports.BMS.alerts.list.push(possibleAlert);
 			});
 
 			this.ports.BMS.port.open((err) => {
 				if (err) {
 					this.logger.fail('Error opening BMS serial port: ' + err);
-					// run "sudo fuser -k ${this.config.BMS.path}" asynchronously using os module
 					child_process.exec(`sudo fuser -k ${this.config.BMS.path}`, (error, stdout, stderr) => {
 						if (error) {
 							this.logger.warn('Error killing BMS serial port process: ' + error);
@@ -168,45 +179,39 @@ class AEVBackend {
 							this.logger.warn('Error killing BMS serial port process: ' + stderr);
 						}
 					});
-
-
 					this.continue.BMS = 0;
 				}
 			});
-
 		} else {
 			this.logger.fail('BMS serial port not found at ' + this.config.BMS.path);
 		}
 
-		// if (this.ports.BMS.enabled) {
-		// 	if (this.ports.BMS.port.isOpen) {
-
-		// 	}
-		// }
 	}
 
-	initGPS() {
+	async initGPS() {
 		// Initialize serial port for GPS
 		if (fs.existsSync(this.config.GPS.path)) {
-			this.ports.GPS.enabled = true; // this should also depend on gpsd running
+			this.ports.GPS.enabled = true;
 			this.ports.GPS.daemon = new Daemon({
 				program: 'gpsd',
 				device: this.config.GPS.path,
-				port: 2947, // Default port for gpsd, usually shouldn't be changed
+				port: 2947,
 				pid: '/tmp/gpsd.pid',
 				readOnly: false,
 				logger: {
-					info: function() {},
+					// info: function() {},
+					info: this.logger.debug,
 					warn: console.warn,
 					error: console.error,
 				},
 			});
 
-			this.ports.GPS.listener = new Listener({ // i doubt we need both the listener and the daemon but thats what docs say so..
+			this.ports.GPS.listener = new Listener({
 				port: 2947,
 				hostname: 'localhost',
 				logger:  {
-					info: function() {},
+					// info: function() {},
+					info: this.logger.debug,
 					warn: console.warn,
 					error: console.error,
 				},
@@ -221,7 +226,7 @@ class AEVBackend {
 			});
 			this.ports.GPS.listener.on('TPV', (data) => {
 				this.parseGPSData(data);
-				// console.log(this.ports.GPS.data)
+				// this.logger.log(this.ports.GPS.data)
 			});
 
 		} else {
@@ -229,7 +234,7 @@ class AEVBackend {
 		}
 	}
 
-	stopGPS() {
+	async stopGPS() {
 		this.continue.GPS = false;
 		this.ports.GPS.listener.disconnect();
 		this.ports.GPS.daemon.stop();
@@ -240,14 +245,14 @@ class AEVBackend {
 		this.continue.BMS = 1;
 		await this.ports.BMS.port.close();
 		// this.continue.BMS = 0;
-		this.logger.warn('BMS serial port closed');
+		// this.logger.debug('BMS serial port closed');
 	}
 
 	async initSocket() {
 		if (this.ports.BMS.enabled || this.ports.GPS.enabled) {
 			// Initialize WebSocket server
 			this.wss = new WebSocketServer({
-				port: this.config.mainPort,
+				port: this.config.ports.socket,
 			});
 
 
@@ -281,6 +286,12 @@ class AEVBackend {
 						} catch (error) {
 							this.logger.warn('Error restarting BMS: ' + error);
 						}
+					} else if (message === 'bms-alerts') {
+						ws.send('BMS alert mode enabled');
+						this.ports.BMS.alerts.parser.on('data', (data) => {
+							const possibleAlert = this.parseAlert(data.toString());
+							if (possibleAlert) ws.send(JSON.stringify(possibleAlert));
+						});
 					} else if (message === 'bms-debug') {
 						ws.send('BMS debug mode enabled');
 						const debugBMS = this.ports.BMS.port.pipe(new DelimiterParser({
@@ -290,22 +301,18 @@ class AEVBackend {
 							// console.log(data.toString());
 							ws.send(data.toString());
 						});
-
-
 					} else {
 						reply = 'Unknown message';
-						this.logger.warn('Unknown message received from client: ' + `"${message}"`);
+						this.logger.debug('Unknown message received from client: ' + `"${message}"`);
 					}
 
 					ws.send(`${prefix}|${reply}`);
 				});
 			});
-
-			// this.wss.
 		}
 	}
 
-	initAPI() {
+	async initAPI() {
 		this.api = express();
 		this.api.use(express.json());
 
@@ -330,7 +337,11 @@ class AEVBackend {
 		});
 		this.api.get('/bms/data', (req, res) => {
 			this.logger.success('Recieved GET request on /bms/data, replied with BMS data');
-			res.send(JSON.stringify(this.ports.BMS.data));
+			res.send(this.ports.BMS.data);
+		});
+		this.api.get('/bms/alerts', (req, res) => {
+			this.logger.success('Recieved GET request on /bms/alerts, replied with BMS alerts');
+			res.send({ list: this.ports.BMS.alerts.list });
 		});
 		this.api.get('/bms/restart', (req, res) => {
 			try {
@@ -353,7 +364,7 @@ class AEVBackend {
 		});
 		this.api.get('/gps/data', (req, res) => {
 			this.logger.success('Recieved GET request on /gps/data, replied with GPS data');
-			res.send(JSON.stringify(this.ports.GPS.data));
+			res.send(this.ports.GPS.data);
 		});
 		this.api.get('/gps/restart', (req, res) => {
 			try {
@@ -366,20 +377,17 @@ class AEVBackend {
 			}
 		});
 
-		this.api.listen(3002, () => {
-			this.logger.success('API server started on port', 3002);
+		this.api.listen(this.config.ports.api, () => {
+			this.logger.success('API server started on port ' + this.config.ports.api);
 		});
 	}
 
 	parseBMSData(data) {
-		// Parse BMS data
 		try {
 			// Trim the first two elements of the array and the last element of the array (useless bc first is "\r" and last is "BMS> ")
 			data.shift();
 			data.shift();
 			data.pop();
-
-			// console.log("RAW SERIAL PORT DATA: \n\n" + data.join("\n"));
 
 			// Split each element by the colon and trim the whitespace from the beginning and end
 			data = data.map((element) => {
@@ -404,8 +412,6 @@ class AEVBackend {
 				});
 			});
 
-			// console.log(data)
-
 			// Alerts
 			const alerts = [];
 			const alertStartIndex = data.findIndex((element) => {
@@ -414,15 +420,11 @@ class AEVBackend {
 			const alertEndIndex = data.findIndex((element) => {
 				return element[0] === 'current';
 			});
-			// alertEndIndex -= 1;
-			// console.log(alertStartIndex, alertEndIndex);
 			for (let i = alertStartIndex; i < alertEndIndex; i++) {
 				if (data[i][1] !== '') {
 					alerts.push(data[i][1]);
-					// data
 				}
 			}
-			// console.log(alerts);
 
 
 			const dataObj = {};
@@ -431,10 +433,8 @@ class AEVBackend {
 					dataObj[item[0]] = item[1];
 				}
 			}
-
 			dataObj.alerts = alerts;
-
-			// console.log(dataObj);
+			if (!dataObj.uptime) return this.ports.BMS.data;
 
 			// Trim all non-numbers from dataObj.uptime
 			const oldUptime = dataObj.uptime.split('');
@@ -459,13 +459,6 @@ class AEVBackend {
 				}
 			}
 			dataObj.cells = cells.join('');
-			// console.log(dataObj.cells);
-
-			// console.log("\n\n");
-			// this.logger.success("BMS Data: \n\n" + JSON.stringify(dataObj, null, 4));
-
-			// this.logger.log(dataObj)
-
 
 			const finalData = {
 				voltage: dataObj.voltage,
@@ -478,7 +471,9 @@ class AEVBackend {
 				uptime: dataObj.uptime,
 			};
 
-			// console.log("Raw BMS data: \n\n" + JSON.stringify(data));
+			// this.logger.success("RAW BMS DATA: \n\n" + data.join("\n"));
+			// this.logger.success("PARSED BMS DATA: \n\n" + JSON.stringify(finalData, null, 4));
+
 			console.log('Parsed BMS data: ' + JSON.stringify(finalData));
 			this.ports.BMS.data = finalData;
 			this.ports.BMS.debug.noRes = 0;
@@ -505,6 +500,23 @@ class AEVBackend {
 		}
 
 		return this.ports.GPS.data;
+	}
+
+	parseAlert(data) {
+		// If line starts with "1/" and has a colon in it, it's an alert
+		if (data.startsWith('1/') && data.includes(':')) {
+			const alert = data.split(':');
+			alert[0] = alert[0].replace('1/', '');
+			alert[1] = alert[1].replace('\r', '');
+			const alertObj = {
+				cell: alert[0],
+				message: alert[1],
+				time: new Date().getTime(),
+			};
+			return alertObj;
+		} else {
+			return null;
+		}
 	}
 }
 

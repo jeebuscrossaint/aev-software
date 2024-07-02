@@ -6,7 +6,11 @@ const config = {
 	'GPS': {
 		'path': '/dev/ttyACM0',
 	},
-	'mainPort': 3001,
+	'ports': {
+		socket: 3001,
+		api: 3002,
+	},
+	'debug': false,
 };
 
 export default config;
