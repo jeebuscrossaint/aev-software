@@ -1,11 +1,11 @@
 // Original logger code from RealStr1ke/Byte
 
 const colors = require('colors');
-const config = require('./config');
 
 class Logger {
-
-	constructor() {
+	constructor(config) {
+		this.config = config;
+		this.startup('Config: ' + this.config.debug);
 		this.startup('Logger initialized!');
 	}
 
@@ -20,7 +20,10 @@ class Logger {
 	}
 
 	debug(info) {
-		if (config.debug) console.log(`${colors.bgGray(` ${new Date().toLocaleTimeString()} `)}${colors.bgBrightYellow.white(' ! ')} ${info}`);
+		// console.log(this.config.debug)
+		if (this.config) {
+			if (this.config.debug) console.log(`${colors.bgGray(` ${new Date().toLocaleTimeString()} `)}${colors.bgBrightYellow.white(' ! ')} ${info}`);
+		}
 	}
 
 	warn(info) {

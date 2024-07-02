@@ -161,7 +161,7 @@ class AEVBackend {
 
 			});
 			this.ports.BMS.alerts.parser.on('data', (data) => {
-				const possibleAlert = parseAlert(data.toString());
+				const possibleAlert = this.parseAlert(data.toString());
 				if (possibleAlert) this.ports.BMS.alerts.list.push(possibleAlert);
 			});
 
@@ -201,19 +201,19 @@ class AEVBackend {
 				logger: {
 					// info: function() {},
 					info: this.logger.debug,
-					warn: console.warn,
-					error: console.error,
+					warn: this.logger.debug,
+					error: this.logger.fail,
 				},
 			});
 
 			this.ports.GPS.listener = new Listener({
 				port: 2947,
 				hostname: 'localhost',
-				logger:  {
+				logger: {
 					// info: function() {},
 					info: this.logger.debug,
-					warn: console.warn,
-					error: console.error,
+					warn: this.logger.debug,
+					error: this.logger.fail,
 				},
 				parse: true,
 			});
@@ -271,7 +271,8 @@ class AEVBackend {
 						reply = JSON.stringify(this.ports.GPS.data);
 					} else if (message === 'gps-restart') {
 						try {
-							this.initGPS();
+							await this.stopGMS()
+							await this.initGPS();
 							reply = 'GPS restarted';
 							this.logger.success('GPS restarted');
 						} catch (error) {
