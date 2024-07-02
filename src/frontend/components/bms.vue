@@ -1,7 +1,4 @@
 <script setup>
-    // import { io } from "socket.io-client";
-    // import { io } from "socket.io";
-
     import { Line } from 'vue-chartjs';
     import { Doughnut } from 'vue-chartjs'
     import * as chartConfig from '/assets/js/chartInfo.js'
@@ -69,7 +66,7 @@
         "cells":"0",
         "mean":"0v",
         "stddev":"0v",
-        "alerts": ["Alert 1", "Alert 2"],
+        "alerts": ["not locked", "pack in HVM", "pack in LVM", "Alert 4a"],
         "current":"0A",
         "SOC":"0%",
         "uptime":["00","00","00"]
@@ -115,61 +112,15 @@
         }
     }
 
-    /* SOCKETIO IMPLEMENTATION */
-    /*    
-    const socket = io('ws://localhost:3001', {  reconnectionDelayMax: 10000,});
-    socket.on('message', (content) => {
-        // Update All data
-        const split = content.split("|");
-        if (split[0] === "bms-data") {
-            data.value = JSON.parse(split[1]);
-        }
-        // Voltage
-        updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
-        // Current
-        updateCurrent(Number((data.value.current).slice(0, -1)));
-        // Battery
-        updateBattery(Number((data.value.SOC).slice(0, -1)));
-        // Reload Graphs
-        reloaded.value = !(reloaded.value);
-    });
-    socket.on('error', (content) => {
-        console.error("SOCKET ERROR: " + content);
-        error.value = content;
-    });
-    */
-
-    /* BROKEN WS IMPLEMENTATION */
-    /*
-    ws.on("error", console.error);
-
-    ws.on("open", function open() {
-        setInterval(() => {
-            ws.send("bms-data");
-        }, 500);
-    });
-
-    ws.on("message", function message(BMSdata) {
-        console.log("BMS Data Recieved: " + BMSdata);
-        data.value = BMSdata
-
-        // Voltage
-        updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
-        // Current
-        updateCurrent(Number((data.value.current).slice(0, -1)));
-        // Battery
-        updateBattery(Number((data.value.SOC).slice(0, -1)));
-        // Reload Graphs
-        reloaded.value = !(reloaded.value);
-        
-        const split = BMSdata.split("|");
-        if (split[0] === "bms-data") {
-            data.value = JSON.parse(split[1]);
-        }
-    });
-    */
-
     onMounted(() => {
+        setInterval(() => {
+            /* WS IMPLEMENTATION */
+            socket.send("bms-data");
+
+            /* RESTAPI IMPLEMENTATION - (Make single button to restart BMS and log its status to console when pressed if we use this implementation) */
+            // getBMSData('/bms/data');
+        }, 500);
+
         /* Testing Graphs & Values -- COMMENT THIS OUT WHEN PLUGGING IN BMS */
         /*
         function rand(min, max) {
@@ -207,19 +158,6 @@
             reloaded.value = !(reloaded.value)
         }, 550);
         */
-
-        setInterval(() => {
-            /* SOCKETIO IMPLEMENTATION */
-            // socket.send("bms-data");
-            // socket.emit("bms-data", "bms-data");
-
-            /* WS IMPLEMENTATION */
-            socket.send("bms-data");
-
-            /* RESTAPI IMPLEMENTATION - (Make single button to restart BMS and log its status to console when pressed if we use this implementation) */
-            // getBMSData('/bms/data');
-
-        }, 500);
     });
 </script>
 
@@ -254,9 +192,6 @@
                     <li>- Grab Zach or Amarnath & debug the issue with a keyboard.</li>
                 </ul>
             </div>
-            
-            
-            
         </div>
     </div>
     <!--Shows Functional Page if there aren't any issues-->
@@ -270,16 +205,15 @@
                 <!--Top Section-->
                 <section class="flex gap-5 h-[40%] w-[95%] p-5 justify-between items-center">
                     <!--Battery Info Text-->
-                    <div class="flex flex-col gap-5">
-                        <h1 class="text-3xl sm:text-5xl font-semibold">Battery</h1> 
-                        <p class="sm:text-2xl">
+                    <div class="max-w-[50%] flex flex-col gap-5">
+                        <!-- <h1 class="text-3xl sm:text-5xl font-semibold">Battery</h1>  -->
+                        <div class="sm:text-2xl">
                             Alerts: <br>
-                            <ul>
-                                <li class="sm:text-xl" v-for="alert in data.alerts">&emsp; • {{ alert }}</li>
-                            </ul>
+                            <div class="sm:text-lg flex flex-wrap"><span class="mx-2" v-for="alert in data.alerts">{{ alert }}</span></div>
                             Cells: {{ data.cells }}<br>
+                            Stddev: {{ data.stddev }}<br>
                             Uptime: {{ data.uptime[0] }}:{{ data.uptime[1] }}:{{ data.uptime[2] }}
-                        </p>
+                        </div>
                     </div>
                     <!--Battery Gaugue-->
                     <div v-if="reloaded" class="w-[45%] h-full flex justify-center items-center">
@@ -293,9 +227,9 @@
                     </div>
                 </section>
                 <!--Div ider (bc its a div & divider... heh)-->
-                <div class="w-full h-[2px] flex justify-center items-center px-3">
+                <!-- <div class="w-full h-[2px] flex justify-center items-center px-3">
                     <div class="bg-gray-200 h-full w-full rounded-full"></div>
-                </div>
+                </div> -->
                 <!--Bottom Section-->
                 <section class="flex justify-center items-center gap-5 w-full h-[60%] py-5">
 			        <!--Voltage Graph-->

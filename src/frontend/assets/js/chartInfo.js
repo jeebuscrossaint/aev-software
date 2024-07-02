@@ -1,7 +1,7 @@
 /** *********VOLTAGE***********/
 
 const voltage = {
-	labels: [ '2s', '', '', '', '1s', '', '', '', 'Now'],
+	labels: [ '4s', '', '', '', '2s', '', '', '', 'Now'],
 	datasets: [
 		{
 			label: 'Per Cell',
@@ -73,7 +73,7 @@ export const voltageChart = {
 				drawTicks: false,
 			},
 			max: 120,
-			min: 0,
+			min: 75,
 		},
 	},
 	aspectRatio: 1 / 1,
@@ -87,7 +87,7 @@ export function getVoltage(newData) {
 /** *********CURRENT***********/
 
 const current = {
-	labels: [ '2s', '', '', '', '1s', '', '', '', 'Now'],
+	labels: [ '4s', '', '', '', '2s', '', '', '', 'Now'],
 	datasets: [
 		{
 			label: 'Voltage',
@@ -138,8 +138,8 @@ export const currentChart = {
 			grid: {
 				drawTicks: false,
 			},
-			max: 30,
-			min: -30,
+			max: 50,
+			min: -20,
 		},
 	},
 	aspectRatio: 1 / 1,
