@@ -16,10 +16,10 @@ ln -sf ~/aev-software/src/hyprland/ags-str1ke ~/.config/ags
 
 # Install frontend dependencies
 echo "Installing frontend dependencies..."
-cd ~/aev-software/src/js/frontend
+cd ~/aev-software/src/frontend
 npm install
 
 # Install serialport dependencies
 echo "Installing serialport dependencies..."
-cd ~/aev-software/src/js/serialport
+cd ~/aev-software/src/serialport
 npm install
