@@ -15,6 +15,7 @@ function createWindow(route = '/', title: string, icon: any) { //creates electro
     webPreferences: {
         nodeIntegration: true,
         contextIsolation: false,
+        preload: 'preload.js'
     },
     autoHideMenuBar: true
   });
