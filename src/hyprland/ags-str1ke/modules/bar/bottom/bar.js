@@ -3,15 +3,15 @@ const { Box, CenterBox, Window } = Widget;
 import BM from './modules.js';
 
 function Left() {
-    const left = Box({
-        children: [
-            // BM.Launcher(),
-            // BM.Separator("|"),
-            BM.Workspaces(),
-            BM.ClientTitle(),
-        ],
-    });
-    return left;
+	const left = Box({
+		children: [
+			// BM.Launcher(),
+			// BM.Separator("|"),
+			BM.Workspaces(),
+			BM.ClientTitle(),
+		],
+	});
+	return left;
 }
 
 // function Center() {
@@ -28,32 +28,32 @@ function Left() {
 // }
 
 function Right() {
-    const right = Box({
-        hpack: 'end',
-        children: [
-            BM.VolumeInfo(),
-            BM.NetworkInfo(),
-            // BM.BatteryInfo(),
-            BM.Separator(),
-            // BM.SystemInfo(),
-            // BM.Separator(),
-            BM.SysTray(),
-            BM.Separator(),
-            BM.PowerMenu(),
-        ],
-    });
-    return right;
+	const right = Box({
+		hpack: 'end',
+		children: [
+			BM.VolumeInfo(),
+			BM.NetworkInfo(),
+			// BM.BatteryInfo(),
+			BM.Separator(),
+			// BM.SystemInfo(),
+			// BM.Separator(),
+			BM.SysTray(),
+			BM.Separator(),
+			BM.PowerMenu(),
+		],
+	});
+	return right;
 }
 
 export default monitor => Window({
-    name: `bbar${monitor}`, // name has to be unique
-    monitor,
-    anchor: ['bottom', 'left', 'right'],
-    exclusivity: 'exclusive',
-    child: CenterBox({
-        className: 'bar',
-        startWidget: Left(),
-        // centerWidget: Center(),
-        endWidget: Right(),
-    }),
-})
+	name: `bbar${monitor}`, // name has to be unique
+	monitor,
+	anchor: ['bottom', 'left', 'right'],
+	exclusivity: 'exclusive',
+	child: CenterBox({
+		className: 'bar',
+		startWidget: Left(),
+		// centerWidget: Center(),
+		endWidget: Right(),
+	}),
+});
