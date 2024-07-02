@@ -4,22 +4,6 @@ const voltage = {
 	labels: [ '4s', '', '', '', '2s', '', '', '', 'Now'],
 	datasets: [
 		{
-			label: 'Per Cell',
-			backgroundColor: '#4D6CAF',
-			borderColor: '#4D6CAF',
-			color: '#ffffff',
-			fill: {
-				target: 'origin',
-				above: 'rgba(127, 159, 229,0.8)',
-			},
-			tension: 0.1,
-			pointStyle: false,
-			capBezierPoints: false,
-			borderCapStyle: 'round',
-			cubicInterpolationMode: 'monotone',
-			data: [0, 0, 0, 0, 0, 0, 0, 0, 0],
-		},
-		{
 			label: 'Overall',
 			backgroundColor: '#f87979',
 			borderColor: '#f87979',
@@ -43,7 +27,7 @@ export const voltageChart = {
 	animation: false,
 	plugins: {
 		legend: {
-			display: true,
+			display: false,
 			reverse: true,
 			labels: {
 				useBorderRadius: true,
@@ -58,7 +42,7 @@ export const voltageChart = {
 		x: {
 			ticks: {
 				color: 'black',
-				padding: 3,
+				padding: 6,
 			},
 			grid: {
 				drawTicks: false,
@@ -67,7 +51,7 @@ export const voltageChart = {
 		y: {
 			ticks: {
 				color: 'black',
-				padding: 3,
+				padding: 6,
 			},
 			grid: {
 				drawTicks: false,

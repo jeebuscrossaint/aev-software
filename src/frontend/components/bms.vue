@@ -15,23 +15,14 @@
     const battery = ref(chartConfig.getBattery([0,100]));
 
     // Functions to update charts
-    function updateVoltage(newVoltage, newMean){
+    function updateVoltage(newVoltage){
         for (let i = 0; i < voltage.value.datasets[0].data.length; i++) {
             if (i == voltage.value.datasets[0].data.length - 1) {
-                voltage.value.datasets[0].data[i] = newMean;
+                voltage.value.datasets[0].data[i] = newVoltage;
                 break;
             }
             else{
                 voltage.value.datasets[0].data[i] = voltage.value.datasets[0].data[i+1];
-            }
-        }
-        for (let i = 0; i < voltage.value.datasets[1].data.length; i++) {
-            if (i == voltage.value.datasets[1].data.length - 1) {
-                voltage.value.datasets[1].data[i] = newVoltage;
-                break;
-            }
-            else{
-                voltage.value.datasets[1].data[i] = voltage.value.datasets[1].data[i+1];
             }
         }
     }
@@ -85,7 +76,7 @@
             data.value = JSON.parse(split[1]);
         }
         // Voltage
-        updateVoltage(Number((data.value.voltage).slice(0, -1)), Number((data.value.mean).slice(0, -1)));
+        updateVoltage(Number((data.value.voltage).slice(0, -1)));
         // Current
         updateCurrent(Number((data.value.current).slice(0, -1)));
         // Battery
@@ -209,8 +200,9 @@
                         <!-- <h1 class="text-3xl sm:text-5xl font-semibold">Battery</h1>  -->
                         <div class="sm:text-2xl">
                             Alerts: <br>
-                            <div class="sm:text-lg flex flex-wrap"><span class="mx-2" v-for="alert in data.alerts">{{ alert }}</span></div>
+                            <div class="sm:text-lg flex flex-wrap sm:leading-tight"><span class="mx-2" v-for="alert in data.alerts">{{ alert }}</span></div>
                             Cells: {{ data.cells }}<br>
+                            Mean: {{ data.mean }}<br>
                             Stddev: {{ data.stddev }}<br>
                             Uptime: {{ data.uptime[0] }}:{{ data.uptime[1] }}:{{ data.uptime[2] }}
                         </div>
